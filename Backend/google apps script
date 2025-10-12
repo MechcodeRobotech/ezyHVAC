@@ -1,0 +1,511 @@
+const PROJECT_CONFIG = {
+  components: {
+    wall: {
+      input: {
+        id: '1yd02SKyNsxwm_QSCSBsoFPGG-gDGZc9x5IHHNATrXcE',
+        tab: 'input',
+        inputTarget: {
+          wallarea: 'B12', uFactor: 'E9', surfaceColor: 'B13', roomAirTemp: 'B6',
+          outsidetemp: 'B14:B37', wallType: 'B9', alpha_ho: 'C13', tyeofinteriorzone: 'B10',
+          psi: 'C11', taub: 'B7', taud: 'B8', longitude: 'B4',
+          lonHemisphere: 'C4', latitude: 'B5', calMonth: 'B1', timeZone: 'B3',
+        }
+      },
+      total: {
+        id: '1yd02SKyNsxwm_QSCSBsoFPGG-gDGZc9x5IHHNATrXcE',
+        tab: 'Total_CL',
+        totalTarget: {
+          hour: 'A13:A36', coolingload: 'M13:M36' ,sensible: 'P13:P36' , latent: 'O13:O36'
+        }
+      }
+    },
+    window_with_blinds: {
+      input: {
+        id: '1NxGiKUbPv9lt3MqUkwjFLDdmoveOguLQvw8SfP6KOs0', tab: 'Input',
+        inputTarget: {
+          uwindow: 'B13', windowArea: 'B12', roomAirTemp: 'B6', interiorZone: 'B9',
+          surfaceAzimuth: 'C11', outsidetemp: 'B15:B38',
+          orientation: 'B11', typeofGlass: 'B39', taub: 'B7', taud: 'B8', longitude: 'B4', lonHemisphere: 'C4',
+          latitude: 'B5', calMonth: 'B1', timeZone: 'B3',
+        },
+      },
+      total: {
+        id: '1NxGiKUbPv9lt3MqUkwjFLDdmoveOguLQvw8SfP6KOs0',
+        tab: 'Output',
+        totalTarget: { hour: 'A14:A37', coolingload: 'N14:N37',sensible: 'Q14:Q37' , latent: 'P14:P37' }
+      }
+    },
+    window_no_blinds: {
+      input: {
+        id: '1m-Qr5t4ebg-ANTW5Pyq0Zunbz-Gtou2UZsHDZjOFQlQ', tab: 'Input',
+        inputTarget: {
+          uwindow: 'B13', windowArea: 'B12',
+          roomAirTemp: 'B6',
+          interiorZone: 'B9', solarRTSZone: 'B10', surfaceAzimuth: 'C11',
+          outsidetemp: 'B15:B38', orientation: 'B11', typeofGlass: 'B39',
+          taub: 'B7', taud: 'B8', longitude: 'B4', lonHemisphere: 'C4',
+          latitude: 'B5', calMonth: 'B1', timeZone: 'B3',
+        },
+      },
+      total: {
+        id: '1m-Qr5t4ebg-ANTW5Pyq0Zunbz-Gtou2UZsHDZjOFQlQ',
+        tab: 'Output',
+        totalTarget: { hour: 'A14:A37', coolingload: 'N14:N37',sensible: 'Q14:Q37' , latent: 'P14:P37' }
+      }
+    },
+    roof: {
+      input: {
+        id: '1aEPr5woVoOszfnrOk1C3XeOCWdoTi0uTKDVdJg8rias', tab: 'Input',
+        inputTarget: {
+          uFactor: 'E9', surfaceArea: 'B12', roomAirTemp: 'B6', roofType: 'B9',
+          interiorZone: 'B10', surfaceColor: 'B13', outsidetemp: 'B14:B37',
+          surfaceTilt: 'B38', taub: 'B7', taud: 'B8', longitude: 'B4',
+          lonHemisphere: 'C4', latitude: 'B5', calMonth: 'B1', timeZone: 'B3',
+        }
+      },
+      total: {
+        id: '1aEPr5woVoOszfnrOk1C3XeOCWdoTi0uTKDVdJg8rias',
+        tab: 'Output',
+        totalTarget: { hour: 'A13:A36', coolingload: 'M13:M36',sensible: 'P13:P36' , latent: 'Q13:Q36' }
+      }
+    },
+
+    ceiling: {
+      input: {
+        id: '1LfBBs_4epvs9KHTrod3Wei4khPaIKtONTkVpZa0GgmI',
+        tab: 'w',
+        inputTarget: {
+          area: 'B1', materialType: 'B4', tempdiff: 'B2', interiorZone: 'B6',
+          roomAirTemp: 'B3', uFactor: 'C4',
+          outsidetemp: 'B8:B31'
+        }
+      },
+      total: {
+        id: '1LfBBs_4epvs9KHTrod3Wei4khPaIKtONTkVpZa0GgmI',
+        tab: 'Output',
+        totalTarget: { hour: 'A3:A26', coolingload: 'I3:I26',sensible: 'L3:L26' , latent: 'K3:K26' }
+      }
+    },
+    floor: {
+      input: {
+        id: '1vHNqRCAx1R4SN350go2rSNb2kdNHKaMd5dAKhSnELdo',
+        tab: 'w',
+        inputTarget: {
+          area: 'B1', materialType: 'B4', tempdiff: 'B2', interiorZone: 'B6',
+          roomAirTemp: 'B3', uFactor: 'C4',
+          outsidetemp: 'B8:B31'
+        }
+      },
+      total: {
+        id: '1vHNqRCAx1R4SN350go2rSNb2kdNHKaMd5dAKhSnELdo',
+        tab: 'Output',
+        totalTarget: { hour: 'A3:A26', coolingload: 'I3:I26' ,sensible: 'L3:L26' , latent: 'K3:K26'}
+      }
+    },
+    partition: {
+      input: {
+        id: '1QeYQq8cZMDkvnHTVPmDmisRGUS9H8J-jWapcQJI9_XY',
+        tab: 'w',
+        inputTarget: {
+          area: 'B1', materialType: 'B4', tempdiff: 'B2', interiorZone: 'B6',
+          roomAirTemp: 'B3', uFactor: 'C4',
+          outsidetemp: 'B8:B31'
+        }
+      },
+      total: {
+        id: '1QeYQq8cZMDkvnHTVPmDmisRGUS9H8J-jWapcQJI9_XY',
+        tab: 'Output',
+        totalTarget: { hour: 'A3:A26', coolingload: 'I3:I26',sensible: 'L3:L26' , latent: 'K3:K26' }
+      }
+    },
+    people: {
+      input: {
+        id: '1jSlc6EO-qdfLkoCPG3Rf98pjDzHVwWap0yCLklAEP7w', tab: 'input',
+        inputTarget: {
+          count: 'B1', activity: 'B2', usage: 'C3:C26', interiorZone: 'B27'
+        }
+      },
+      total: {
+        id: '1jSlc6EO-qdfLkoCPG3Rf98pjDzHVwWap0yCLklAEP7w',
+        tab: 'Output',
+        totalTarget: { hour: 'A4:A27', coolingload: 'H4:H27',sensible: 'K4:K27' , latent: 'J4:J27' }
+      }
+    },
+    lighting: {
+      input: {
+        id: '1-I6ZfBmMXaMV1HjESaM0VSZZ8q2snc6mSnTel4joyLU', tab: 'input',
+        inputTarget: { heatGain: 'B1', interiorZone: 'B2', usage: 'B4:B27', coolingType: 'B29' },
+      },
+      total: {
+        id: '1-I6ZfBmMXaMV1HjESaM0VSZZ8q2snc6mSnTel4joyLU',
+        tab: 'Output',
+        totalTarget: { hour: 'C4:C27', coolingload: 'J4:J27',sensible: 'M4:M27' , latent: 'L4:L27' }
+      }
+    },
+    equipments: {
+      input: {
+        id: '1e1wmDhZPJqR7o7JqJsE_kvPXwWeNRxgBTeP4PqpxuvU', tab: 'input',
+        inputTarget: {
+          sensibleHeat: 'B1', latentHeat: 'B2', coolingType: 'B3',
+          interiorZone: 'B4', usage: 'B6:B29'
+        },
+      },
+      total: {
+        id: '1e1wmDhZPJqR7o7JqJsE_kvPXwWeNRxgBTeP4PqpxuvU',
+        tab: 'Output',
+        totalTarget: { hour: 'D4:D27', coolingload: 'M4:M27',sensible: 'P4:P27' , latent: 'O4:O27' }
+      }
+    },
+    outdoor: {
+      input: {
+        id: '12BN8hD3bQYht_T3_K8HHgEh67KB0ApIraETUKWOuqIg',
+        tab: 'input',
+        inputTarget: {
+          flowRate: 'B1',
+          roomAirTemp: 'B2',
+          altitude: 'B4',
+          roomHumidity: 'B3',
+          outsideAirTemp: 'C8:C31',
+          outsideAirHumidity: 'B8:B31',
+          usage: 'B33:B56'
+        }
+      },
+      total: {
+        id: '12BN8hD3bQYht_T3_K8HHgEh67KB0ApIraETUKWOuqIg',
+        tab: 'output',
+        totalTarget: { hour: 'A5:A28', coolingload: 'P5:P28',sensible: 'S5:S28' , latent: 'R5:R28' }
+      }
+    }
+  }
+};
+
+
+
+function writeCommonData(inputSheet, targets, commonData) {
+    if (!targets) {
+        Logger.log('Warning: writeCommonData was called with an undefined targets object.');
+        return; 
+    }
+
+    for (const key in commonData) {
+        if (targets[key]) {
+            inputSheet.getRange(targets[key]).setValue(commonData[key]);
+        }
+    }
+
+
+    if (targets.outsidetemp) inputSheet.getRange(targets.outsidetemp).setValues(commonData.outsideAirTemp_24);
+    if (targets.outsideAirTemp) inputSheet.getRange(targets.outsideAirTemp).setValues(commonData.outsideAirTemp_24);
+    if (targets.outsideAirHumidity) inputSheet.getRange(targets.outsideAirHumidity).setValues(commonData.outsideAirHumidity_24);
+}
+
+function writeWallData(wall, commonData, sheets) {
+    const config = PROJECT_CONFIG.components.wall;
+    const inputSheet = sheets[config.input.id].getSheetByName(config.input.tab);
+    const targets = config.input.inputTarget;
+    writeCommonData(inputSheet, targets, commonData);
+    inputSheet.getRange(targets.wallarea).setValue(wall.area);
+    inputSheet.getRange(targets.uFactor).setValue(wall.uFactor);
+    inputSheet.getRange(targets.surfaceColor).setValue(wall.surfaceColor);
+    inputSheet.getRange(targets.wallType).setValue(wall.wallType);
+    inputSheet.getRange(targets.tyeofinteriorzone).setValue(wall.interiorZone);
+    inputSheet.getRange(targets.psi).setValue(wall.psi);
+    inputSheet.getRange(targets.alpha_ho).setValue(wall.alpha_ho);
+}
+
+function writeWindowData(win, commonData, sheets) {
+    const config = win.blinds === 'With Blinds'
+        ? PROJECT_CONFIG.components.window_with_blinds
+        : PROJECT_CONFIG.components.window_no_blinds;
+    const inputSheet = sheets[config.input.id].getSheetByName(config.input.tab);
+    const targets = config.input.inputTarget;
+    writeCommonData(inputSheet, targets, commonData);
+    inputSheet.getRange(targets.uwindow).setValue(win.uFactor);
+    inputSheet.getRange(targets.windowArea).setValue(win.area);
+    inputSheet.getRange(targets.interiorZone).setValue(win.interiorZone);
+    if (targets.solarRTSZone) inputSheet.getRange(targets.solarRTSZone).setValue(win.solarRTSZoneType);
+    inputSheet.getRange(targets.surfaceAzimuth).setValue(win.psi);
+    inputSheet.getRange(targets.orientation).setValue(win.orientation);
+    inputSheet.getRange(targets.typeofGlass).setValue(win.glassType);
+}
+
+function writeRoofData(roof, commonData, sheets) {
+    const config = PROJECT_CONFIG.components.roof;
+    const inputSheet = sheets[config.input.id].getSheetByName(config.input.tab);
+    const targets = config.input.inputTarget;
+    writeCommonData(inputSheet, targets, commonData);
+    inputSheet.getRange(targets.surfaceArea).setValue(roof.area);
+    inputSheet.getRange(targets.uFactor).setValue(roof.uFactor);
+    inputSheet.getRange(targets.surfaceColor).setValue(roof.surfaceColor);
+    inputSheet.getRange(targets.roofType).setValue(roof.roofType);
+    inputSheet.getRange(targets.interiorZone).setValue(roof.interiorZone);
+    inputSheet.getRange(targets.surfaceTilt).setValue(roof.surfaceAngle);
+}
+
+function writeCFPData(item, config, commonData, sheets) {
+    const inputSheet = sheets[config.input.id].getSheetByName(config.input.tab);
+    const targets = config.input.inputTarget;
+    writeCommonData(inputSheet, targets, commonData);
+    inputSheet.getRange(targets.area).setValue(item.area);
+    inputSheet.getRange(targets.materialType).setValue(item.materialType);
+    inputSheet.getRange(targets.uFactor).setValue(item.uFactor);
+    inputSheet.getRange(targets.interiorZone).setValue(item.interiorZone);
+    inputSheet.getRange(targets.tempdiff).setValue(item.tempdiff);
+}
+
+function writePeopleData(people, commonData, sheets) {
+    const config = PROJECT_CONFIG.components.people;
+    const inputSheet = sheets[config.input.id].getSheetByName(config.input.tab);
+    const targets = config.input.inputTarget;
+    inputSheet.getRange(targets.count).setValue(people.count);
+    inputSheet.getRange(targets.activity).setValue(people.activity);
+    inputSheet.getRange(targets.interiorZone).setValue(people.interiorZone);
+    if (Array.isArray(people.schedule)) {
+        const usageValues = people.schedule.map(item => [parseFloat(item.usage.replace('%', '')) / 100 || 0]);
+        inputSheet.getRange(targets.usage).setValues(usageValues);
+    }
+}
+
+function writeLightingData(lighting, commonData, sheets) {
+    const config = PROJECT_CONFIG.components.lighting;
+    const inputSheet = sheets[config.input.id].getSheetByName(config.input.tab);
+    const targets = config.input.inputTarget;
+    inputSheet.getRange(targets.heatGain).setValue(lighting.heatGain);
+    inputSheet.getRange(targets.coolingType).setValue(lighting.coolingType);
+    inputSheet.getRange(targets.interiorZone).setValue(lighting.interiorZone);
+    if (Array.isArray(lighting.schedule)) {
+        const usageValues = lighting.schedule.map(item => [parseFloat(item.usage.replace('%', '')) / 100 || 0]);
+        inputSheet.getRange(targets.usage).setValues(usageValues);
+    }
+}
+
+function writeEquipmentData(equipments, commonData, sheets) {
+    const config = PROJECT_CONFIG.components.equipments;
+    const inputSheet = sheets[config.input.id].getSheetByName(config.input.tab);
+    const targets = config.input.inputTarget;
+    inputSheet.getRange(targets.sensibleHeat).setValue(equipments.sensibleHeat);
+    inputSheet.getRange(targets.latentHeat).setValue(equipments.latentHeat);
+    inputSheet.getRange(targets.coolingType).setValue(equipments.coolingType);
+    inputSheet.getRange(targets.interiorZone).setValue(equipments.interiorZone);
+    if (Array.isArray(equipments.schedule)) {
+        const usageValues = equipments.schedule.map(item => [parseFloat(item.usage.replace('%', '')) / 100 || 0]);
+        inputSheet.getRange(targets.usage).setValues(usageValues);
+    }
+}
+
+function writeOutdoorAirData(outsideAir, locationInfo, commonData, sheets) {
+    const config = PROJECT_CONFIG.components.outdoor;
+    const inputSheet = sheets[config.input.id].getSheetByName(config.input.tab);
+    const targets = config.input.inputTarget;
+    writeCommonData(inputSheet, targets, commonData); 
+    inputSheet.getRange(targets.flowRate).setValue(outsideAir.flowRate);
+    inputSheet.getRange(targets.altitude).setValue(locationInfo.altitude);
+    inputSheet.getRange(targets.roomAirTemp).setValue(locationInfo.roomTemp);
+    inputSheet.getRange(targets.roomHumidity).setValue(locationInfo.roomHumidity);
+}
+
+
+
+
+function processMultipleItems(items, config, writerFunction, commonData, sheets) {
+    const aggregatedTotal = Array(24).fill(0);
+    const aggregatedSensible = Array(24).fill(0);
+    const aggregatedLatent = Array(24).fill(0);
+
+    if (!items || items.length === 0) {
+        return { total: aggregatedTotal, sensible: aggregatedSensible, latent: aggregatedLatent };
+    }
+
+    const outputSheet = sheets[config.total.id].getSheetByName(config.total.tab);
+    const totalTargets = config.total.totalTarget;
+
+    items.forEach((item, index) => {
+        writerFunction(item, commonData, sheets);
+        SpreadsheetApp.flush();
+        Utilities.sleep(5000); 
+        
+        const loadValues = outputSheet.getRange(totalTargets.coolingload).getValues();
+        const sensibleValues = outputSheet.getRange(totalTargets.sensible).getValues();
+        const latentValues = outputSheet.getRange(totalTargets.latent).getValues();
+        
+        for (let i = 0; i < 24; i++) {
+            aggregatedTotal[i] += parseFloat(loadValues[i]?.[0]) || 0;
+            aggregatedSensible[i] += parseFloat(sensibleValues[i]?.[0]) || 0;
+            aggregatedLatent[i] += parseFloat(latentValues[i]?.[0]) || 0;
+        }
+    });
+
+    return {
+        total: aggregatedTotal,
+        sensible: aggregatedSensible,
+        latent: aggregatedLatent
+    };
+}
+
+function readSingleComponent(config, sheets) {
+    try {
+        const outputSheet = sheets[config.total.id].getSheetByName(config.total.tab);
+        const totalTargets = config.total.totalTarget;
+
+        const loadValues = outputSheet.getRange(totalTargets.coolingload).getValues();
+        const sensibleValues = outputSheet.getRange(totalTargets.sensible).getValues();
+        const latentValues = outputSheet.getRange(totalTargets.latent).getValues();
+
+        const total = Array(24).fill(0).map((_, i) => parseFloat(loadValues[i]?.[0]) || 0);
+        const sensible = Array(24).fill(0).map((_, i) => parseFloat(sensibleValues[i]?.[0]) || 0);
+        const latent = Array(24).fill(0).map((_, i) => parseFloat(latentValues[i]?.[0]) || 0);
+
+        return { total, sensible, latent };
+
+    } catch (readError) {
+        Logger.log(`Error reading single component with sheet ID ${config.total.id}: ${readError.message}`);
+        return {
+            total: Array(24).fill(0),
+            sensible: Array(24).fill(0),
+            latent: Array(24).fill(0)
+        };
+    }
+}
+
+function doPost(e) {
+    const lock = LockService.getScriptLock();
+    try {
+        lock.waitLock(300000); 
+
+        const requestData = JSON.parse(e.postData.contents);
+        const formData = requestData.formData;
+        
+        const sheets = {};
+        for (const componentKey in PROJECT_CONFIG.components) {
+            const config = PROJECT_CONFIG.components[componentKey];
+            if (config.input && config.input.id && !sheets[config.input.id]) {
+                sheets[config.input.id] = SpreadsheetApp.openById(config.input.id);
+            }
+        }
+        
+        const locationInfo = formData.locationInfo;
+        const commonData = {
+            roomAirTemp: locationInfo.roomTemp,
+            taub: locationInfo.taub,
+            taud: locationInfo.taud,
+            longitude: locationInfo.longitude,
+            lonHemisphere: locationInfo.lonHemisphere,
+            latitude: locationInfo.latitude,
+            calMonth: locationInfo.calMonth,
+            timeZone: locationInfo.timeZone.replace('UTC', ''),
+            outsideAirTemp_24: locationInfo.outsideAirTemp.map(t => [t]),
+            outsideAirHumidity_24: locationInfo.outsideAirHumidity.map(h => [h])
+        };
+        
+        const allResults = {};
+
+        if (formData.walls && formData.walls.length > 0) {
+            allResults.walls = processMultipleItems(formData.walls, PROJECT_CONFIG.components.wall, writeWallData, commonData, sheets);
+        }
+        if (formData.ceilings && formData.ceilings.length > 0) {
+            allResults.ceilings = processMultipleItems(formData.ceilings, PROJECT_CONFIG.components.ceiling, (item, cd, s) => writeCFPData(item, PROJECT_CONFIG.components.ceiling, cd, s), commonData, sheets);
+        }
+        if (formData.floors && formData.floors.length > 0) {
+            allResults.floors = processMultipleItems(formData.floors, PROJECT_CONFIG.components.floor, (item, cd, s) => writeCFPData(item, PROJECT_CONFIG.components.floor, cd, s), commonData, sheets);
+        }
+        if (formData.partitions && formData.partitions.length > 0) {
+            allResults.partitions = processMultipleItems(formData.partitions, PROJECT_CONFIG.components.partition, (item, cd, s) => writeCFPData(item, PROJECT_CONFIG.components.partition, cd, s), commonData, sheets);
+        }
+
+        if (formData.windows && formData.windows.length > 0) {
+            const windowsWithBlinds = formData.windows.filter(w => w.blinds === 'With Blinds');
+            const windowsNoBlinds = formData.windows.filter(w => w.blinds !== 'With Blinds');
+            
+            const resultsWithBlinds = processMultipleItems(windowsWithBlinds, PROJECT_CONFIG.components.window_with_blinds, writeWindowData, commonData, sheets);
+            const resultsNoBlinds = processMultipleItems(windowsNoBlinds, PROJECT_CONFIG.components.window_no_blinds, writeWindowData, commonData, sheets);
+
+            allResults.windows = {
+                total: resultsWithBlinds.total.map((val, i) => val + resultsNoBlinds.total[i]),
+                sensible: resultsWithBlinds.sensible.map((val, i) => val + resultsNoBlinds.sensible[i]),
+                latent: resultsWithBlinds.latent.map((val, i) => val + resultsNoBlinds.latent[i])
+            };
+        }
+
+        if (formData.roof) writeRoofData(formData.roof, commonData, sheets);
+        if (formData.people) writePeopleData(formData.people, commonData, sheets);
+        if (formData.lighting) writeLightingData(formData.lighting, commonData, sheets);
+        if (formData.equipments) writeEquipmentData(formData.equipments, commonData, sheets);
+        if (formData.outsideAir) writeOutdoorAirData(formData.outsideAir, locationInfo, commonData, sheets);
+
+        SpreadsheetApp.flush();
+        Utilities.sleep(5000);
+        
+        if (formData.roof) allResults.roof = readSingleComponent(PROJECT_CONFIG.components.roof, sheets);
+        if (formData.people) allResults.people = readSingleComponent(PROJECT_CONFIG.components.people, sheets);
+        if (formData.lighting) allResults.lighting = readSingleComponent(PROJECT_CONFIG.components.lighting, sheets);
+        if (formData.equipments) allResults.equipments = readSingleComponent(PROJECT_CONFIG.components.equipments, sheets);
+        if (formData.outsideAir) allResults.outdoor = readSingleComponent(PROJECT_CONFIG.components.outdoor, sheets);
+
+        const projectHourlyTotalLoads = Array(24).fill(0);
+        const projectHourlySensibleLoads = Array(24).fill(0);
+        const projectHourlyLatentLoads = Array(24).fill(0);
+        const categoryHourlyLoads = {};
+        const categoryHourlySensibleLoads = {};
+        const categoryHourlyLatentLoads = {};
+        const categoryPeakLoads = {};
+        const categoryPeakSensibleLoads = {};
+        const categoryPeakLatentLoads = {};
+
+        for (const categoryName in allResults) {
+            const results = allResults[categoryName];
+            if (!results) continue;
+            
+            categoryHourlyLoads[categoryName] = results.total;
+            categoryHourlySensibleLoads[categoryName] = results.sensible;
+            categoryHourlyLatentLoads[categoryName] = results.latent;
+            
+            categoryPeakLoads[categoryName] = results.total && results.total.length > 0 ? Math.max(...results.total) : 0;
+            categoryPeakSensibleLoads[categoryName] = results.sensible && results.sensible.length > 0 ? Math.max(...results.sensible) : 0;
+            categoryPeakLatentLoads[categoryName] = results.latent && results.latent.length > 0 ? Math.max(...results.latent) : 0;
+
+            for (let i = 0; i < 24; i++) {
+                projectHourlyTotalLoads[i] += results.total[i] || 0;
+                projectHourlySensibleLoads[i] += results.sensible[i] || 0;
+                projectHourlyLatentLoads[i] += results.latent[i] || 0;
+            }
+        }
+        
+        const designLoad = projectHourlyTotalLoads.length > 0 ? Math.max(...projectHourlyTotalLoads) : 0;
+        const peakHourIndex = projectHourlyTotalLoads.indexOf(designLoad);
+        const designSensibleLoad = projectHourlySensibleLoads.length > 0 ? Math.max(...projectHourlySensibleLoads) : 0;
+        const sensiblePeakHourIndex = projectHourlySensibleLoads.indexOf(designSensibleLoad);
+        const designLatentLoad = projectHourlyLatentLoads.length > 0 ? Math.max(...projectHourlyLatentLoads) : 0;
+        const latentPeakHourIndex = projectHourlyLatentLoads.indexOf(designLatentLoad);
+
+        const response = {
+            status: 'success',
+            message: 'Cooling load calculated successfully!',
+            data: {
+                designLoad: { peakLoad: designLoad, peakHour: peakHourIndex !== -1 ? peakHourIndex + 1 : null },
+                designSensibleLoad: { peakLoad: designSensibleLoad, peakHour: sensiblePeakHourIndex !== -1 ? sensiblePeakHourIndex + 1 : null },
+                designLatentLoad: { peakLoad: designLatentLoad, peakHour: latentPeakHourIndex !== -1 ? latentPeakHourIndex + 1 : null },
+                categoryPeakLoads,
+                categoryPeakSensibleLoads,
+                categoryPeakLatentLoads,
+                projectHourlyTotalLoads,
+                projectHourlySensibleLoads,
+                projectHourlyLatentLoads,
+                categoryHourlyLoads,
+                categoryHourlySensibleLoads,
+                categoryHourlyLatentLoads,
+            }
+        };
+
+        return ContentService.createTextOutput(JSON.stringify(response)).setMimeType(ContentService.MimeType.JSON);
+
+    } catch (error) {
+        Logger.log(`FATAL ERROR: ${error.stack}`);
+        return ContentService.createTextOutput(JSON.stringify({
+            status: 'error',
+            message: error.message || 'An unknown error occurred.',
+            stack: error.stack
+        })).setMimeType(ContentService.MimeType.JSON);
+    } finally {
+        lock.releaseLock();
+    }
+}
