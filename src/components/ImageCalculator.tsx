@@ -363,7 +363,7 @@ const ImageCalculator = () => {
   };
   
   useEffect(() => {
-    if (frictionRate && colorInputs.length > 0) {
+    if (colorInputs.length > 0) {
       const updatedResults: CalculationResult[] = [];
       
       colorInputs.forEach(input => {
@@ -1183,20 +1183,45 @@ const ImageCalculator = () => {
                                 step="2"
                                 value={input.width}
                                 onChange={(e) => updateColorInput(input.id, 'width', e.target.value)}
-                                className={`flex-1 text-sm ${!input.isManualWidth ? 'bg-blue-50 border-blue-200' : ''}`}
-                                disabled={!input.isManualWidth}
+                                className={`flex-1 text-sm ${!(input.isManualWidth && input.isManualHeight) ? 'bg-blue-50 border-blue-200' : ''}`}
+                                disabled={!(input.isManualWidth && input.isManualHeight)}
                               />
                               <button
                                 type="button"
-                                onClick={() => updateColorInput(input.id, 'isManualWidth', !input.isManualWidth)}
+                                onClick={() => {
+                                  setColorInputs(prev => prev.map(r => {
+                                    if (r.id !== input.id) return r;
+                                    // toggle manual mode for both dimensions
+                                    const manual = !(r.isManualWidth && r.isManualHeight);
+                                    let newWidth = r.width;
+                                    let newHeight = r.height;
+                                    if (!manual) {
+                                      // revert to auto calculation
+                                      const cfm = parseFloat(r.cfm);
+                                      const FR = parseFloat(frictionRate) || 0.1;
+                                      const De = computeEquivalentDiameterIP(FR, cfm);
+                                      if (isFinite(De) && De > 0) {
+                                        newWidth = String(toEvenInt(1.317 * De));
+                                        newHeight = String(toEvenInt(1.317 * De / 2));
+                                      }
+                                    }
+                                    return {
+                                      ...r,
+                                      isManualWidth: manual,
+                                      isManualHeight: manual,
+                                      width: newWidth,
+                                      height: newHeight
+                                    };
+                                  }));
+                                }}
                                 className={`px-2 py-1 text-xs rounded transition-colors ${
-                                  input.isManualWidth 
-                                    ? 'bg-red-100 text-red-600 hover:bg-red-200' 
+                                  (input.isManualWidth && input.isManualHeight)
+                                    ? 'bg-red-100 text-red-600 hover:bg-red-200'
                                     : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
                                 }`}
-                                title={input.isManualWidth ? 'Switch to Auto' : 'Switch to Manual'}
+                                title={(input.isManualWidth && input.isManualHeight) ? 'Switch to Auto' : 'Switch to Manual'}
                               >
-                                {input.isManualWidth ? 'M' : 'A'}
+                                {(input.isManualWidth && input.isManualHeight) ? 'M' : 'A'}
                               </button>
                             </div>
                           </td>
@@ -1208,21 +1233,9 @@ const ImageCalculator = () => {
                                 step="2"
                                 value={input.height}
                                 onChange={(e) => updateColorInput(input.id, 'height', e.target.value)}
-                                className={`flex-1 text-sm ${!input.isManualHeight ? 'bg-blue-50 border-blue-200' : ''}`}
-                                disabled={!input.isManualHeight}
+                                className={`flex-1 text-sm ${!(input.isManualWidth && input.isManualHeight) ? 'bg-blue-50 border-blue-200' : ''}`}
+                                disabled={!(input.isManualWidth && input.isManualHeight)}
                               />
-                              <button
-                                type="button"
-                                onClick={() => updateColorInput(input.id, 'isManualHeight', !input.isManualHeight)}
-                                className={`px-2 py-1 text-xs rounded transition-colors ${
-                                  input.isManualHeight 
-                                    ? 'bg-red-100 text-red-600 hover:bg-red-200' 
-                                    : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
-                                }`}
-                                title={input.isManualHeight ? 'Switch to Auto' : 'Switch to Manual'}
-                              >
-                                {input.isManualHeight ? 'M' : 'A'}
-                              </button>
                             </div>
                           </td>
                           <td className="border border-gray-200 p-3">
