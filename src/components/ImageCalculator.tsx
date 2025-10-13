@@ -85,16 +85,16 @@ const ImageCalculator = () => {
       uploadImage: "Upload",
       dragDrop: "Drag and drop an image here, or click to select",
       colorDetected: "Colors Detected",
-      cfmInput: "CFM Value",
-  flowLps: "Flow (L/s)",
+      cfmInput: "Airflow (cfm)",
+      flowLps: "Airflow (L/s)",
       lengthInput: "Length (m)",
-      widthInput: "Width (in)",
-      heightInput: "Height (in)",
+      widthInput: "Width (in.)",
+      heightInput: "Height (in.)",
       frictionInput: "Friction",
       velocityResult: "velocity (fpm)",
-  velocityResultSI: "velocity (m/s)",
+      velocityResultSI: "velocity (m/s)",
       giSheetAreaResult: "GI.Sheet Area",
-      giNumberResult: "GI Number NO.",
+      giNumberResult: "GI Number",
       calculate: "Calculate All",
       results: "Calculation Results",
       color: "Color",
@@ -104,26 +104,26 @@ const ImageCalculator = () => {
       noImage: "Please upload an image first",
       clear: "Clear All",
       downloadResults: "Download Results",
-  downloadSummary: "Download Summary",
+      downloadSummary: "Download Summary",
       addRow: "Add Row",
       deleteRow: "Delete Row",
       actions: "Actions",
       editColor: "Click to edit color",
-  frictionRateInput: "Friction rate",
-  frictionRateUnit: "in. of water/100 ft",
-  frictionRateUnitSI: "Pa/m",
+      frictionRateInput: "Friction rate",
+      frictionRateUnit: "",
+      frictionRateUnitSI: "",
       summaryTable: "Summary Table",
-      zincNumber: "GI Number NO.",
+      zincNumber: "GI Number",
       totalArea: "Total Area",
-  extraPercent: "Add %",
-  adjustedTotal: "Total with %",
+      extraPercent: "Add %",
+      adjustedTotal: "Total with %",
       sheetCount: "Number of Sheets",
       ventHeaderSize: "Vent header size",
       headCount: "Number of heads",
-  dustSize: "Dust Size (in.)",
+      dustSize: "Dust Size (in.)",
       zincAmountFromCalc: "Zinc amount",
-  squareFeet: "square feet",
-  ventHeaderDropdown: "Vent Header Information",
+      squareFeet: "square feet",
+      ventHeaderDropdown: "Vent Header Information",
       uploadHelp: "What image should I upload?",
       uploadHelpDesc: "Use a clear plan with distinct colored lines for each duct run, a high-contrast background, and minimal shadows. Recommended formats: PNG or JPG. Suggested resolution ≥ 1000 px on the longer side.",
       sampleCorrect: "Example of a correct image",
@@ -134,16 +134,16 @@ const ImageCalculator = () => {
       uploadImage: "อัพโหลด",
       dragDrop: "ลากและวางภาพที่นี่ หรือคลิกเพื่อเลือก",
       colorDetected: "สีที่ตรวจพบ",
-      cfmInput: "ค่า CFM",
-  flowLps: "อัตราการไหล (ลิตร/วินาที)",
+      cfmInput: "อัตราการไหล (cfm)",
+      flowLps: "อัตราการไหล (ลิตร/วินาที)",
       lengthInput: "ความยาว (ม.)",
       widthInput: "ความกว้าง (นิ้ว)",
       heightInput: "ความสูง (นิ้ว)",
       frictionInput: "ค่าความเสียดทาน (Friction)",
       velocityResult: "ความเร็ว (fpm)",
-  velocityResultSI: "ความเร็ว (ม./วินาที)",
+      velocityResultSI: "ความเร็ว (ม./วินาที)",
       giSheetAreaResult: "ปริมาณสังกะสี (GI.Sheet Area)",
-      giNumberResult: "GI Number NO. (เบอร์สังกะสี)",
+      giNumberResult: "เบอร์สังกะสี",
       calculate: "คำนวณทั้งหมด",
       results: "ผลการคำนวณ",
       color: "สี",
@@ -153,26 +153,26 @@ const ImageCalculator = () => {
       noImage: "กรุณาอัพโหลดภาพก่อน",
       clear: "ล้างทั้งหมด",
       downloadResults: "ดาวน์โหลดผลลัพธ์",
-  downloadSummary: "ดาวน์โหลดสรุป",
+      downloadSummary: "ดาวน์โหลดสรุป",
       addRow: "เพิ่มแถว",
       deleteRow: "ลบแถว",
       actions: "การจัดการ",
       editColor: "คลิกเพื่อแก้ไขสี",
-  frictionRateInput: "ค่าความเสียดทาน",
-  frictionRateUnit: "นิ้วน้ำ/100 ฟุต",
-  frictionRateUnitSI: "ปาสคาล/เมตร",
+      frictionRateInput: "ค่าความเสียดทาน",
+      frictionRateUnit: "",
+      frictionRateUnitSI: "",
       summaryTable: "ตารางสรุป",
       zincNumber: "เบอร์สังกะสี",
       totalArea: "พื้นที่รวม",
-  extraPercent: "เพิ่ม %",
-  adjustedTotal: "พื้นที่รวมหลังเพิ่ม %",
+      extraPercent: "เพิ่ม %",
+      adjustedTotal: "พื้นที่รวมหลังเพิ่ม %",
       sheetCount: "จำนวนแผ่น",
       ventHeaderSize: "หัวจ่ายลมขนาด",
       headCount: "จำนวนหัว",
-  dustSize: "Dust Size (นิ้ว)",
+      dustSize: "Dust Size (นิ้ว)",
       zincAmountFromCalc: "ปริมาณสังกะสี",
-  squareFeet: "ตารางฟุต",
-  ventHeaderDropdown: "ข้อมูลหัวจ่ายลม",
+      squareFeet: "ตารางฟุต",
+      ventHeaderDropdown: "ข้อมูลหัวจ่ายลม",
       uploadHelp: "ควรอัปโหลดรูปแบบไหน?",
       uploadHelpDesc: "ควรใช้แบบแปลน/ภาพที่มีเส้นสีแทนท่อลมแต่ละเส้นชัดเจน พื้นหลังตัดกัน แสงเงาน้อย แนะนำไฟล์ PNG หรือ JPG และความละเอียดด้านยาว ≥ 1000 พิกเซล",
       sampleCorrect: "ตัวอย่างรูปที่ถูกต้อง",
@@ -180,13 +180,12 @@ const ImageCalculator = () => {
   };
 
   // --- Unit conversions and formulas ---
-  const CFM_PER_LPS = 2.118880003; // 1 L/s = 2.11888 CFM
+  const CFM_PER_LPS = 2.119; // 1 L/s = 2.119 CFM
   const LPS_PER_CFM = 1 / CFM_PER_LPS; // 1 CFM = 0.471947 L/s
-  const PA_PER_INH2O = 249.0889; // Pa per inch of water
-  const M_PER_100FT = 30.48; // meters in 100 ft
-  // Convert friction rate between IP (inH2O/100ft) and SI (Pa/m)
-  const ipToSiFR = (inH2O_per_100ft: number) => (inH2O_per_100ft * PA_PER_INH2O) / M_PER_100FT; // Pa/m
-  const siToIpFR = (pa_per_m: number) => (pa_per_m * M_PER_100FT) / PA_PER_INH2O; // inH2O/100ft
+  const FR_RATIO_SI_PER_IP = 8.17; // Pa/m per (in.wc/100ft)
+  // Convert friction rate between IP (in.wc/100ft) and SI (Pa/m)
+  const ipToSiFR = (inWc_per_100ft: number) => inWc_per_100ft * FR_RATIO_SI_PER_IP; // Pa/m
+  const siToIpFR = (pa_per_m: number) => pa_per_m / FR_RATIO_SI_PER_IP; // in.wc/100ft
 
   // IP (18): D(in) = ( FR_ip / (0.12317 * Q_cfm^1.82) )^(-1/4.86)
   // Already defined below as computeEquivalentDiameterIP
@@ -880,22 +879,22 @@ const ImageCalculator = () => {
       'Color',
       unitMode === 'ip' ? 'CFM Value' : 'Flow (L/s)',
       'Length (m)',
-      'Width (in)',
-      'Height (in)',
-      'Friction',
+      unitMode === 'ip' ? 'Width (in)' : 'Width (mm)',
+      unitMode === 'ip' ? 'Height (in)' : 'Height (mm)',
+      unitMode === 'ip' ? 'Friction (in.wc/100ft)' : 'Friction (Pa/m)',
       unitMode === 'ip' ? 'Velocity (fpm)' : 'Velocity (m/s)',
-      'GI Sheet Area',
+      unitMode === 'ip' ? 'GI Sheet Area (ft^2)' : 'GI Sheet Area (m^2)',
       'GI Number'
     ];
     const rows = results.map(r => [
       r.color,
       unitMode === 'ip' ? r.cfm : Number((r.cfm * LPS_PER_CFM).toFixed(3)),
       r.length,
-      r.width,
-      r.height,
+      unitMode === 'ip' ? r.width : Math.round(r.width * 25.4),
+      unitMode === 'ip' ? r.height : Math.round(r.height * 25.4),
       r.friction,
       r.velocity.toFixed(2),
-      r.giSheetArea.toFixed(2),
+      (unitMode === 'ip' ? r.giSheetArea : r.giSheetArea / 10.764).toFixed(2),
       r.giNumber
     ]);
     const csv = [headers.join(','), ...rows.map(arr => arr.join(','))].join('\n');
@@ -1178,38 +1177,38 @@ const ImageCalculator = () => {
             </div>
             {/* Reference length (m) below the toggle */}
             <div className="flex items-center gap-4 mb-3">
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 w-56">
                 <span className="text-sm font-semibold text-blue-700">
                   {lang === 'th' ? 'ความยาวอ้างอิง (ม.)' : 'Reference length (m)'}:
                 </span>
               </div>
-              <div className="flex-1 max-w-xs">
+              <div className="w-44">
                 <Input
                   type="number"
                   placeholder="5"
                   step="0.01"
                   value={refLengthM}
                   onChange={(e) => setRefLengthM(e.target.value)}
-                  className="text-sm"
+                  className="text-sm w-full"
                 />
               </div>
             </div>
 
             {/* Friction rate */}
             <div className="flex items-center gap-4">
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 w-56">
                 <span className="text-sm font-semibold text-blue-700">
                   {text[lang].frictionRateInput}:
                 </span>
               </div>
-              <div className="flex-1 max-w-xs">
+              <div className="w-44">
                 <Input
                   type="number"
-                  placeholder="0.1"
+                  placeholder={unitMode === 'ip' ? '0.1 in.wc/100ft' : '0.817 Pa/m'}
                   step="0.001"
                   value={frictionRate}
                   onChange={(e) => setFrictionRate(e.target.value)}
-                  className="text-sm"
+                  className="text-sm w-full"
                 />
               </div>
               <div className="flex items-center text-sm text-blue-600 font-medium">
@@ -1223,6 +1222,20 @@ const ImageCalculator = () => {
                     <img src="/fr.png" alt="Friction Rate" className="w-full" />
                   </DialogContent>
                 </Dialog>
+                {/* Show converted friction in the other unit */}
+                {(() => {
+                  const fr = parseFloat(frictionRate);
+                  if (!isNaN(fr) && fr > 0) {
+                    const other = unitMode === 'ip' ? (fr * 8.17) : (fr / 8.17);
+                    const unit = unitMode === 'ip' ? 'Pa/m' : 'in.wc/100ft';
+                    return (
+                      <span className="ml-3 text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
+                        ≈ {other.toFixed(4)} {unit}
+                      </span>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </div>
           </div>
@@ -1236,9 +1249,11 @@ const ImageCalculator = () => {
                       <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{text[lang].color}</th>
                       <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{unitMode === 'ip' ? text[lang].cfmInput : text[lang].flowLps}</th>
                       <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{text[lang].lengthInput}</th>
-                      <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{text[lang].widthInput}</th>
-                      <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{text[lang].heightInput}</th>
-                      <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{text[lang].frictionInput}</th>
+                      <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{unitMode === 'ip' ? text[lang].widthInput : (lang === 'th' ? 'ความกว้าง (มม.)' : 'Width (mm)')}</th>
+                      <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{unitMode === 'ip' ? text[lang].heightInput : (lang === 'th' ? 'ความสูง (มม.)' : 'Height (mm)')}</th>
+                      <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">
+                        {text[lang].frictionInput} {unitMode === 'ip' ? '(in.wc/100ft)' : '(Pa/m)'}
+                      </th>
                       <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">
                         <div className="flex items-center">
                           {unitMode === 'ip' ? text[lang].velocityResult : text[lang].velocityResultSI}
@@ -1253,7 +1268,9 @@ const ImageCalculator = () => {
                           </Dialog>
                         </div>
                       </th>
-                      <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{text[lang].giSheetAreaResult}</th>
+                      <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">
+                        {text[lang].giSheetAreaResult} {unitMode === 'ip' ? '(ft²)' : '(m²)'}
+                      </th>
                       <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">
                         <div className="flex items-center">
                           {text[lang].giNumberResult}
@@ -1307,13 +1324,21 @@ const ImageCalculator = () => {
                             />
                           </td>
                           <td className="border border-gray-200 p-3">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 w-44">
                               <Input
                                 type="number"
-                                placeholder="Even"
-                                step="2"
-                                value={input.width}
-                                onChange={(e) => updateColorInput(input.id, 'width', e.target.value)}
+                                placeholder={unitMode === 'ip' ? 'Even' : (lang === 'th' ? 'มม.' : 'mm')}
+                                step={unitMode === 'ip' ? 2 : 5}
+                                value={unitMode === 'ip' ? input.width : (input.width ? String(Math.round(parseFloat(input.width) * 25.4)) : '')}
+                                onChange={(e) => {
+                                  if (unitMode === 'si') {
+                                    const mmVal = parseFloat(e.target.value);
+                                    const inches = isNaN(mmVal) ? '' : String(mmVal / 25.4);
+                                    updateColorInput(input.id, 'width', inches);
+                                  } else {
+                                    updateColorInput(input.id, 'width', e.target.value);
+                                  }
+                                }}
                                 className={`flex-1 text-sm ${!(input.isManualWidth && input.isManualHeight) ? 'bg-blue-50 border-blue-200' : ''}`}
                                 disabled={!(input.isManualWidth && input.isManualHeight)}
                               />
@@ -1327,10 +1352,13 @@ const ImageCalculator = () => {
                                     let newWidth = r.width;
                                     let newHeight = r.height;
                                     if (!manual) {
-                                      // revert to auto calculation
-                                      const cfm = parseFloat(r.cfm);
-                                      const FR = parseFloat(frictionRate) || 0.1;
-                                      const De = computeEquivalentDiameterIP(FR, cfm);
+                                      // revert to auto calculation (respect unit mode)
+                                      const flowVal = parseFloat(r.cfm);
+                                      const cfmVal = unitMode === 'si' ? flowVal * CFM_PER_LPS : flowVal;
+                                      const FRDisplay = parseFloat(frictionRate) || 0.1;
+                                      const De = unitMode === 'ip'
+                                        ? computeEquivalentDiameterIP(FRDisplay, cfmVal)
+                                        : computeEquivalentDiameterSI_toIn(FRDisplay, flowVal);
                                       if (isFinite(De) && De > 0) {
                                         newWidth = String(toEvenInt(1.317 * De));
                                         newHeight = String(toEvenInt(1.317 * De / 2));
@@ -1357,13 +1385,21 @@ const ImageCalculator = () => {
                             </div>
                           </td>
                           <td className="border border-gray-200 p-3">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 w-44">
                               <Input
                                 type="number"
-                                placeholder="Even"
-                                step="2"
-                                value={input.height}
-                                onChange={(e) => updateColorInput(input.id, 'height', e.target.value)}
+                                placeholder={unitMode === 'ip' ? 'Even' : (lang === 'th' ? 'มม.' : 'mm')}
+                                step={unitMode === 'ip' ? 2 : 5}
+                                value={unitMode === 'ip' ? input.height : (input.height ? String(Math.round(parseFloat(input.height) * 25.4)) : '')}
+                                onChange={(e) => {
+                                  if (unitMode === 'si') {
+                                    const mmVal = parseFloat(e.target.value);
+                                    const inches = isNaN(mmVal) ? '' : String(mmVal / 25.4);
+                                    updateColorInput(input.id, 'height', inches);
+                                  } else {
+                                    updateColorInput(input.id, 'height', e.target.value);
+                                  }
+                                }}
                                 className={`flex-1 text-sm ${!(input.isManualWidth && input.isManualHeight) ? 'bg-blue-50 border-blue-200' : ''}`}
                                 disabled={!(input.isManualWidth && input.isManualHeight)}
                               />
@@ -1390,7 +1426,11 @@ const ImageCalculator = () => {
                           <td className="border border-gray-200 p-3">
                             {result ? (
                               <span className="font-mono font-bold text-green-600 text-sm">
-                                {result.giSheetArea.toFixed(2)}
+                                {(
+                                  unitMode === 'ip'
+                                    ? result.giSheetArea
+                                    : result.giSheetArea * 0.092903
+                                ).toFixed(2)}
                               </span>
                             ) : (
                               <span className="text-slate-400">-</span>
