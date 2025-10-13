@@ -964,12 +964,12 @@ const ImageCalculator = () => {
                   <div className="space-y-2">
                     <div className="text-sm font-medium text-slate-700">{text[lang].sampleCorrect}</div>
                     <img
-                      src="/example-upload.png"
+                      src="/Ex.jpg"
                       onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
                       alt={text[lang].sampleCorrect}
                       className="w-full max-h-[60vh] object-contain rounded border"
                     />
-                    <p className="text-xs text-slate-500">{lang === 'th' ? 'หากไม่เห็นรูปตัวอย่าง ให้เพิ่มไฟล์ชื่อ example-upload.png ที่โฟลเดอร์ public' : 'If the sample image does not appear, add a file named example-upload.png under /public.'}</p>
+                    <p className="text-xs text-slate-500">{lang === 'th' ? 'หากไม่เห็นรูปตัวอย่าง ให้เพิ่มไฟล์ชื่อ Ex.jpg ที่โฟลเดอร์ public' : 'If the sample image does not appear, add a file named Ex.jpg under /public.'}</p>
                   </div>
                 </DialogContent>
               </Dialog>
