@@ -78,8 +78,8 @@ const ImageCalculator = () => {
 
   const text = {
     en: {
-      title: "Image-Based Calculator",
-      description: "Upload an image to calculate values based on colors and CFM inputs",
+      title: "Image-Duct Length Calculator",
+      description: "Upload the ductwork drawing that hightlights different duct sizes using color coding, including reference line (see example).",
       uploadImage: "Upload Image",
       dragDrop: "Drag and drop an image here, or click to select",
       colorDetected: "Colors Detected",
@@ -124,8 +124,8 @@ const ImageCalculator = () => {
       sampleCorrect: "Example of a correct image",
     },
     th: {
-      title: "เครื่องคำนวณจากภาพ",
-      description: "อัพโหลดภาพเพื่อคำนวณค่าจากสีและ CFM ที่ป้อนเข้า",
+      title: "เครื่องคำนวณความยาวท่อจากภาพ",
+      description: "อัพโหลดแบบแปลนท่อลมที่มีการเน้นขนาดท่อต่างๆ ด้วยการใช้สี รวมถึงเส้นอ้างอิง (ดูตัวอย่าง)",
       uploadImage: "อัพโหลดภาพ",
       dragDrop: "ลากและวางภาพที่นี่ หรือคลิกเพื่อเลือก",
       colorDetected: "สีที่ตรวจพบ",

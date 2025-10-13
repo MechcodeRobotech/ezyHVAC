@@ -22,7 +22,7 @@ const Header = () => {
       cooling: "Cooling Load",
       tools: "Energy Calculation Tools",
       EzyPipeCal: "ezyPipeCal",
-      imageCalculator: "Image Calculator"
+      imageCalculator: "Duct Estimate"
     },
     th: {
       title: "ezyHVAC ",
@@ -35,7 +35,7 @@ const Header = () => {
       cooling: "คำนวณภาระความเย็น",
       tools: "เครื่องมือคำนวณพลังงาน",
       EzyPipeCal: "ezyPipeCal",
-      imageCalculator: "คำนวณจากภาพ"
+      imageCalculator: "Duct Estimate"
     }
   };
 
