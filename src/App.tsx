@@ -31,7 +31,7 @@ const App = () => (
         <BrowserRouter> 
           <Header />
           <Routes>
-            <Route path="/" element={<Navigate to="/Coolingload" replace />} />
+            <Route path="/" element={<Navigate to="/ImageCalculator" replace />} />
             <Route path="/Coolingload" element={<Index />} />
             <Route path="/compare" element={<Comparepage/>} />
             <Route path="/Upload" element={<Uploadpage />} />
