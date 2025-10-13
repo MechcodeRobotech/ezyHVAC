@@ -44,6 +44,7 @@ interface SummaryTableRow {
 interface VentHeaderItem {
   width: string;
   height: string;
+  dustSize: string;
   headCount: string;
   zincAmount: string;
 }
@@ -72,7 +73,7 @@ const ImageCalculator = () => {
     { id: 'summary-5', zincNumber: '18', totalArea: '', sheetCount: '', extraPercent: '25' }
   ]);
   const [ventHeaders, setVentHeaders] = useState<VentHeaderItem[]>([
-    { width: '', height: '', headCount: '', zincAmount: '' }
+    { width: '', height: '', dustSize: '', headCount: '', zincAmount: '' }
   ]);
 
   const text = {
@@ -114,6 +115,7 @@ const ImageCalculator = () => {
       sheetCount: "Number of Sheets",
       ventHeaderSize: "Vent header size",
       headCount: "Number of heads",
+  dustSize: "Dust Size (in.)",
       zincAmountFromCalc: "Zinc amount",
       squareFeet: "square feet",
       ventHeaderDropdown: "Vent Header Information"
@@ -156,6 +158,7 @@ const ImageCalculator = () => {
       sheetCount: "จำนวนแผ่น",
       ventHeaderSize: "หัวจ่ายลมขนาด",
       headCount: "จำนวนหัว",
+  dustSize: "Dust Size (นิ้ว)",
       zincAmountFromCalc: "ปริมาณสังกะสี",
       squareFeet: "ตารางฟุต",
       ventHeaderDropdown: "ข้อมูลหัวจ่ายลม"
@@ -777,7 +780,7 @@ const ImageCalculator = () => {
       { id: 'summary-4', zincNumber: '20', totalArea: '', sheetCount: '', extraPercent: '25' },
       { id: 'summary-5', zincNumber: '18', totalArea: '', sheetCount: '', extraPercent: '25' }
     ]);
-    setVentHeaders([{ width: '', height: '', headCount: '', zincAmount: '' }]);
+  setVentHeaders([{ width: '', height: '', dustSize: '', headCount: '', zincAmount: '' }]);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -864,24 +867,25 @@ const ImageCalculator = () => {
   };
 
   const addVentHeaderRow = () => {
-    setVentHeaders(prev => [...prev, { width: '', height: '', headCount: '', zincAmount: '' }]);
+    setVentHeaders(prev => [...prev, { width: '', height: '', dustSize: '', headCount: '', zincAmount: '' }]);
   };
 
   const removeVentHeaderRow = (index: number) => {
     setVentHeaders(prev => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
   };
 
-  // Auto-calculate zinc amount for each vent header row: 0.545 * (W + H + 4) * 0.35 * N
+  // Auto-calculate zinc amount for each vent header row: 0.545 * (W + H + 4) * DUST_SIZE * N
   useEffect(() => {
     setVentHeaders(prev => {
       let changed = false;
       const next = prev.map(item => {
         const W = parseFloat(item.width);
         const H = parseFloat(item.height);
+        const DS = parseFloat(item.dustSize);
         const N = parseFloat(item.headCount);
         let zincAmount = '';
-        if (isFinite(W) && isFinite(H) && isFinite(N) && W > 0 && H > 0 && N > 0) {
-          zincAmount = (0.545 * (W + H + 4) * 0.35 * N).toFixed(2);
+        if (isFinite(W) && isFinite(H) && isFinite(DS) && isFinite(N) && W > 0 && H > 0 && DS > 0 && N > 0) {
+          zincAmount = (0.545 * (W + H + 4) * DS * N).toFixed(2);
         }
         if (zincAmount !== item.zincAmount) {
           changed = true;
@@ -891,7 +895,7 @@ const ImageCalculator = () => {
       });
       return changed ? next : prev;
     });
-  }, [ventHeaders.map(v => `${v.width}|${v.height}|${v.headCount}`).join(',')]);
+  }, [ventHeaders.map(v => `${v.width}|${v.height}|${v.dustSize}|${v.headCount}`).join(',')]);
 
 
   // Helper: compute Total Area using fixed formula [0.545*(W+H)+1]*L
@@ -1338,6 +1342,17 @@ const ImageCalculator = () => {
                       />
                       <span className="text-gray-600">in.</span>
                     </div>
+
+                    <span className="font-medium text-gray-700">
+                      {text[lang].dustSize}
+                    </span>
+                    <Input
+                      type="number"
+                      placeholder="0.35"
+                      value={vh.dustSize}
+                      onChange={(e) => updateVentHeader(idx, 'dustSize', e.target.value)}
+                      className="w-24 h-8 text-sm"
+                    />
 
                     <span className="font-medium text-gray-700">
                       {text[lang].headCount}
