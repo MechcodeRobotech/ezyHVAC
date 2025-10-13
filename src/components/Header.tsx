@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { HelpCircle, ChevronDown, ChevronUp, Menu } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import LanguageToggle from "../contexts/LanguageToggle";
 import { useLanguage } from "../contexts/LanguageContext";
 import VisitorCounter from './VisitorCounter';
 import Logo from '../../public/Logo_of_University_of_Phayao.svg.png';
 import EzyPipeCal from './Ezypipe';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "./ui/sheet";
 
 const Header = () => {
   const { lang } = useLanguage();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [mobileToolsOpen, setMobileToolsOpen] = useState(false);
   const text = {
     en: {
       title: "ezyHVAC ",
@@ -20,7 +22,7 @@ const Header = () => {
       document: "Document",
       langBtn: "TH",
       cooling: "Cooling Load",
-      tools: "Energy Calculation Tools",
+      tools: "A/C Energy Consumption",
       EzyPipeCal: "ezyPipeCal",
       imageCalculator: "Duct Estimate"
     },
@@ -33,9 +35,9 @@ const Header = () => {
       document: "เอกสาร",
       langBtn: "EN",
       cooling: "คำนวณภาระความเย็น",
-      tools: "เครื่องมือคำนวณพลังงาน",
+      tools: "คำนวณการใช้พลังงานเครื่องปรับอากาศ",
       EzyPipeCal: "ezyPipeCal",
-      imageCalculator: "Duct Estimate"
+      imageCalculator: "เครื่องคำนวณท่อ"
     }
   };
 
@@ -64,8 +66,142 @@ const Header = () => {
             </div>
             
             <div className='flex items-center space-x-3'>
-              <VisitorCounter />
-              <LanguageToggle />
+              {/* Desktop-only utilities */}
+              <div className="hidden md:flex items-center space-x-3">
+                <VisitorCounter />
+                <LanguageToggle />
+              </div>
+              {/* Hamburger for mobile */}
+              <Sheet>
+                <SheetTrigger asChild>
+                  <button
+                    aria-label="Open menu"
+                    className="md:hidden inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <Menu size={22} />
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="left" className="p-0 w-4/5 sm:max-w-sm overflow-y-auto pb-6">
+                  <SheetHeader className="px-4 py-3 border-b">
+                    <div className="flex items-center gap-3">
+                      <img src={Logo} alt="UP" className="w-10 h-10 object-contain" />
+                      <div className="text-left">
+                        <SheetTitle className="text-xl">{text[lang].title}</SheetTitle>
+                        <p className="text-xs text-gray-500">{text[lang].desc}</p>
+                      </div>
+                    </div>
+                  </SheetHeader>
+                  {/* Quick settings */}
+                  <div className="px-4 pt-3 pb-2 border-b flex items-center justify-between">
+                    <span className="text-xs text-gray-500">Language</span>
+                    <LanguageToggle />
+                  </div>
+
+                  <nav role="navigation" aria-label="Main" className="px-2 py-2">
+                    <ul className="flex flex-col">
+                      <li>
+                        <SheetClose asChild>
+                          <NavLink
+                            to="/Coolingload"
+                            className={({ isActive }) =>
+                              `block rounded-md px-3 py-3 text-sm ${isActive ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-700 hover:bg-gray-100'}`
+                            }
+                          >
+                            {text[lang].cooling}
+                          </NavLink>
+                        </SheetClose>
+                      </li>
+                      <li className="mt-1">
+                        <button
+                          className="w-full flex items-center justify-between rounded-md px-3 py-3 text-left text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setMobileToolsOpen((v) => !v)}
+                          aria-expanded={mobileToolsOpen}
+                          aria-controls="mobile-tools-submenu"
+                        >
+                          <span>{text[lang].tools}</span>
+                          <ChevronDown size={16} className={`${mobileToolsOpen ? 'rotate-180' : ''} transition-transform`} />
+                        </button>
+                        {mobileToolsOpen && (
+                          <ul id="mobile-tools-submenu" className="mt-1 ml-2 border-l pl-2 space-y-1">
+                            <li>
+                              <SheetClose asChild>
+                                <NavLink
+                                  to="/Seercal"
+                                  className={({ isActive }) =>
+                                    `block rounded-md px-3 py-2 text-sm ${isActive ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-700 hover:bg-gray-100'}`
+                                  }
+                                >
+                                  {text[lang].calculation}
+                                </NavLink>
+                              </SheetClose>
+                            </li>
+                            <li>
+                              <SheetClose asChild>
+                                <NavLink
+                                  to="/compare"
+                                  className={({ isActive }) =>
+                                    `block rounded-md px-3 py-2 text-sm ${isActive ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-700 hover:bg-gray-100'}`
+                                  }
+                                >
+                                  {text[lang].comparison}
+                                </NavLink>
+                              </SheetClose>
+                            </li>
+                            <li>
+                              <SheetClose asChild>
+                                <NavLink
+                                  to="/upload"
+                                  className={({ isActive }) =>
+                                    `block rounded-md px-3 py-2 text-sm ${isActive ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-700 hover:bg-gray-100'}`
+                                  }
+                                >
+                                  {text[lang].upload}
+                                </NavLink>
+                              </SheetClose>
+                            </li>
+                          </ul>
+                        )}
+                      </li>
+                      <li className="mt-1">
+                        <SheetClose asChild>
+                          <NavLink
+                            to="/Pipecal"
+                            className={({ isActive }) =>
+                              `block rounded-md px-3 py-3 text-sm ${isActive ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-700 hover:bg-gray-100'}`
+                            }
+                          >
+                            {text[lang].EzyPipeCal}
+                          </NavLink>
+                        </SheetClose>
+                      </li>
+                      <li className="mt-1">
+                        <SheetClose asChild>
+                          <NavLink
+                            to="/ImageCalculator"
+                            className={({ isActive }) =>
+                              `block rounded-md px-3 py-3 text-sm ${isActive ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-700 hover:bg-gray-100'}`
+                            }
+                          >
+                            {text[lang].imageCalculator}
+                          </NavLink>
+                        </SheetClose>
+                      </li>
+                      <li className="mt-1">
+                        <SheetClose asChild>
+                          <NavLink
+                            to="/document"
+                            className={({ isActive }) =>
+                              `block rounded-md px-3 py-3 text-sm ${isActive ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-700 hover:bg-gray-100'}`
+                            }
+                          >
+                            {text[lang].document}
+                          </NavLink>
+                        </SheetClose>
+                      </li>
+                    </ul>
+                  </nav>
+                </SheetContent>
+              </Sheet>
             </div>
           </div>
         </div>
