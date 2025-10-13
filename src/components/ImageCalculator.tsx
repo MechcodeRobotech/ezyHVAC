@@ -1085,7 +1085,7 @@ const ImageCalculator = () => {
                 {text[lang].frictionRateUnit}
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Info className="ml-2 mb-2 h-4 w-4 cursor-pointer text-gray-500 hover:text-blue-600" />
+                    <Info className="ml-2 h-4 w-4 cursor-pointer text-gray-500 hover:text-blue-600" />
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[850px]">
                     <h3 className="text-lg font-semibold">Friction Rate</h3>
@@ -1113,7 +1113,7 @@ const ImageCalculator = () => {
                           {text[lang].velocityResult}
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Info className="ml-2 mb-2 h-4 w-4 cursor-pointer text-slate-500 hover:text-blue-600" />
+                              <Info className="ml-2 h-4 w-4 cursor-pointer text-slate-500 hover:text-blue-600" />
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-[850px]">
                               <h3 className="text-lg font-semibold">Velocity (fpm)</h3>
@@ -1128,7 +1128,7 @@ const ImageCalculator = () => {
                           {text[lang].giNumberResult}
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Info className="ml-2 mb-2 h-4 w-4 cursor-pointer text-slate-500 hover:text-blue-600" />
+                              <Info className="ml-2 h-4 w-4 cursor-pointer text-slate-500 hover:text-blue-600" />
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-[850px]">
                               <h3 className="text-lg font-semibold">GI Number NO.</h3>
