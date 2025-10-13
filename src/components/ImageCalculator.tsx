@@ -117,8 +117,11 @@ const ImageCalculator = () => {
       headCount: "Number of heads",
   dustSize: "Dust Size (in.)",
       zincAmountFromCalc: "Zinc amount",
-      squareFeet: "square feet",
-      ventHeaderDropdown: "Vent Header Information"
+  squareFeet: "square feet",
+  ventHeaderDropdown: "Vent Header Information",
+      uploadHelp: "What image should I upload?",
+      uploadHelpDesc: "Use a clear plan with distinct colored lines for each duct run, a high-contrast background, and minimal shadows. Recommended formats: PNG or JPG. Suggested resolution ≥ 1000 px on the longer side.",
+      sampleCorrect: "Example of a correct image",
     },
     th: {
       title: "เครื่องคำนวณจากภาพ",
@@ -160,8 +163,11 @@ const ImageCalculator = () => {
       headCount: "จำนวนหัว",
   dustSize: "Dust Size (นิ้ว)",
       zincAmountFromCalc: "ปริมาณสังกะสี",
-      squareFeet: "ตารางฟุต",
-      ventHeaderDropdown: "ข้อมูลหัวจ่ายลม"
+  squareFeet: "ตารางฟุต",
+  ventHeaderDropdown: "ข้อมูลหัวจ่ายลม",
+      uploadHelp: "ควรอัปโหลดรูปแบบไหน?",
+      uploadHelpDesc: "ควรใช้แบบแปลน/ภาพที่มีเส้นสีแทนท่อลมแต่ละเส้นชัดเจน พื้นหลังตัดกัน แสงเงาน้อย แนะนำไฟล์ PNG หรือ JPG และความละเอียดด้านยาว ≥ 1000 พิกเซล",
+      sampleCorrect: "ตัวอย่างรูปที่ถูกต้อง",
     }
   };
 
@@ -945,9 +951,28 @@ const ImageCalculator = () => {
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         <Card className="bg-white shadow-lg border border-gray-200">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold text-slate-700 flex items-center gap-2">
+            <CardTitle className="text-lg font-semibold text-slate-700 inline-flex items-center gap-2">
               <Upload className="w-5 h-5" />
               {text[lang].uploadImage}
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Info className="ml-1 h-4 w-4 cursor-pointer text-gray-500 hover:text-blue-600" />
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[900px]">
+                  <h3 className="text-lg font-semibold mb-2">{text[lang].uploadHelp}</h3>
+                  <p className="text-sm text-slate-600 mb-4">{text[lang].uploadHelpDesc}</p>
+                  <div className="space-y-2">
+                    <div className="text-sm font-medium text-slate-700">{text[lang].sampleCorrect}</div>
+                    <img
+                      src="/example-upload.png"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
+                      alt={text[lang].sampleCorrect}
+                      className="w-full max-h-[60vh] object-contain rounded border"
+                    />
+                    <p className="text-xs text-slate-500">{lang === 'th' ? 'หากไม่เห็นรูปตัวอย่าง ให้เพิ่มไฟล์ชื่อ example-upload.png ที่โฟลเดอร์ public' : 'If the sample image does not appear, add a file named example-upload.png under /public.'}</p>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </CardTitle>
           </CardHeader>
           <CardContent>
