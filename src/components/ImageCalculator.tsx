@@ -118,7 +118,7 @@ const ImageCalculator = () => {
       extraPercent: "Add %",
       adjustedTotal: "Total with %",
       sheetCount: "Number of Sheets",
-      ventHeaderSize: "Vent header size",
+      ventHeaderSize: "Size",
       headCount: "Number of heads",
       dustSize: "Dust Size (in.)",
       zincAmountFromCalc: "Zinc amount",
@@ -167,7 +167,7 @@ const ImageCalculator = () => {
       extraPercent: "เพิ่ม %",
       adjustedTotal: "พื้นที่รวมหลังเพิ่ม %",
       sheetCount: "จำนวนแผ่น",
-      ventHeaderSize: "หัวจ่ายลมขนาด",
+      ventHeaderSize: "ขนาด",
       headCount: "จำนวนหัว",
       dustSize: "Dust Size (นิ้ว)",
       zincAmountFromCalc: "ปริมาณสังกะสี",
@@ -1497,7 +1497,7 @@ const ImageCalculator = () => {
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-slate-700 flex items-center gap-2">
               <Calculator className="w-5 h-5 text-emerald-600" />
-              {lang === 'th' ? 'ข้อมูลหัวจ่ายลม (Vent Header)' : 'Vent Header Information'}
+              {lang === 'th' ? 'ช่องรับลม / ช่องจ่ายลม' : 'Air Inlet / Outlet'}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -1511,20 +1511,54 @@ const ImageCalculator = () => {
                     <div className="flex items-center gap-2">
                       <Input
                         type="number"
-                        placeholder="0"
-                        value={vh.width}
-                        onChange={(e) => updateVentHeader(idx, 'width', e.target.value)}
+                        placeholder={unitMode === 'si' ? (lang === 'th' ? 'มม.' : 'mm') : '0'}
+                        value={unitMode === 'si' ? (vh.width ? String(Math.round(parseFloat(vh.width) * 25.4)) : '') : vh.width}
+                        onChange={(e) => {
+                          if (unitMode === 'si') {
+                            const mmVal = parseFloat(e.target.value);
+                            const inches = isNaN(mmVal) ? '' : String(mmVal / 25.4);
+                            updateVentHeader(idx, 'width', inches);
+                          } else {
+                            updateVentHeader(idx, 'width', e.target.value);
+                          }
+                        }}
                         className="w-20 h-8 text-sm"
                       />
                       <span className="text-gray-600">X</span>
                       <Input
                         type="number"
-                        placeholder="0"
-                        value={vh.height}
-                        onChange={(e) => updateVentHeader(idx, 'height', e.target.value)}
+                        placeholder={unitMode === 'si' ? (lang === 'th' ? 'มม.' : 'mm') : '0'}
+                        value={unitMode === 'si' ? (vh.height ? String(Math.round(parseFloat(vh.height) * 25.4)) : '') : vh.height}
+                        onChange={(e) => {
+                          if (unitMode === 'si') {
+                            const mmVal = parseFloat(e.target.value);
+                            const inches = isNaN(mmVal) ? '' : String(mmVal / 25.4);
+                            updateVentHeader(idx, 'height', inches);
+                          } else {
+                            updateVentHeader(idx, 'height', e.target.value);
+                          }
+                        }}
                         className="w-20 h-8 text-sm"
                       />
-                      <span className="text-gray-600">in.</span>
+                      <span className="text-gray-600">{unitMode === 'si' ? (lang === 'th' ? 'มม.' : 'mm') : (lang === 'th' ? 'นิ้ว' : 'in.')}</span>
+                      {(() => {
+                        const wIn = parseFloat(vh.width);
+                        const hIn = parseFloat(vh.height);
+                        if (isFinite(wIn) && isFinite(hIn) && wIn > 0 && hIn > 0) {
+                          if (unitMode === 'ip') {
+                            const wmm = Math.round(wIn * 25.4);
+                            const hmm = Math.round(hIn * 25.4);
+                            return (
+                              <span className="ml-2 text-gray-500 text-xs">≈ {wmm} × {hmm} {lang === 'th' ? 'มม.' : 'mm'}</span>
+                            );
+                          } else {
+                            return (
+                              <span className="ml-2 text-gray-500 text-xs">≈ {wIn.toFixed(1)} × {hIn.toFixed(1)} {lang === 'th' ? 'นิ้ว' : 'in.'}</span>
+                            );
+                          }
+                        }
+                        return null;
+                      })()}
                     </div>
 
                     <span className="font-medium text-gray-700">
