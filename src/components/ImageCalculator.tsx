@@ -54,6 +54,8 @@ const ImageCalculator = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const lastUploadedFileRef = useRef<File | null>(null);
+  // Units: 'ip' for I-P (inH2O/100ft, CFM) and 'si' for SI (Pa/m, L/s)
+  const [unitMode, setUnitMode] = useState<'ip' | 'si'>('ip');
   
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [detectedColors, setDetectedColors] = useState<string[]>([]);
@@ -80,15 +82,17 @@ const ImageCalculator = () => {
     en: {
       title: "Image-Duct Length Calculator",
       description: "Upload the ductwork drawing that hightlights different duct sizes using color coding, including reference line (see example).",
-      uploadImage: "Upload Image",
+      uploadImage: "Upload",
       dragDrop: "Drag and drop an image here, or click to select",
       colorDetected: "Colors Detected",
       cfmInput: "CFM Value",
+  flowLps: "Flow (L/s)",
       lengthInput: "Length (m)",
       widthInput: "Width (in)",
       heightInput: "Height (in)",
       frictionInput: "Friction",
       velocityResult: "velocity (fpm)",
+  velocityResultSI: "velocity (m/s)",
       giSheetAreaResult: "GI.Sheet Area",
       giNumberResult: "GI Number NO.",
       calculate: "Calculate All",
@@ -105,8 +109,9 @@ const ImageCalculator = () => {
       deleteRow: "Delete Row",
       actions: "Actions",
       editColor: "Click to edit color",
-      frictionRateInput: "Friction rate",
-      frictionRateUnit: "in. of water/100 ft",
+  frictionRateInput: "Friction rate",
+  frictionRateUnit: "in. of water/100 ft",
+  frictionRateUnitSI: "Pa/m",
       summaryTable: "Summary Table",
       zincNumber: "GI Number NO.",
       totalArea: "Total Area",
@@ -126,15 +131,17 @@ const ImageCalculator = () => {
     th: {
       title: "เครื่องคำนวณความยาวท่อจากภาพ",
       description: "อัพโหลดแบบแปลนท่อลมที่มีการเน้นขนาดท่อต่างๆ ด้วยการใช้สี รวมถึงเส้นอ้างอิง (ดูตัวอย่าง)",
-      uploadImage: "อัพโหลดภาพ",
+      uploadImage: "อัพโหลด",
       dragDrop: "ลากและวางภาพที่นี่ หรือคลิกเพื่อเลือก",
       colorDetected: "สีที่ตรวจพบ",
       cfmInput: "ค่า CFM",
+  flowLps: "อัตราการไหล (ลิตร/วินาที)",
       lengthInput: "ความยาว (ม.)",
       widthInput: "ความกว้าง (นิ้ว)",
       heightInput: "ความสูง (นิ้ว)",
       frictionInput: "ค่าความเสียดทาน (Friction)",
       velocityResult: "ความเร็ว (fpm)",
+  velocityResultSI: "ความเร็ว (ม./วินาที)",
       giSheetAreaResult: "ปริมาณสังกะสี (GI.Sheet Area)",
       giNumberResult: "GI Number NO. (เบอร์สังกะสี)",
       calculate: "คำนวณทั้งหมด",
@@ -151,8 +158,9 @@ const ImageCalculator = () => {
       deleteRow: "ลบแถว",
       actions: "การจัดการ",
       editColor: "คลิกเพื่อแก้ไขสี",
-      frictionRateInput: "ค่าความเสียดทาน",
-      frictionRateUnit: "นิ้วน้ำ/100 ฟุต",
+  frictionRateInput: "ค่าความเสียดทาน",
+  frictionRateUnit: "นิ้วน้ำ/100 ฟุต",
+  frictionRateUnitSI: "ปาสคาล/เมตร",
       summaryTable: "ตารางสรุป",
       zincNumber: "เบอร์สังกะสี",
       totalArea: "พื้นที่รวม",
@@ -169,6 +177,51 @@ const ImageCalculator = () => {
       uploadHelpDesc: "ควรใช้แบบแปลน/ภาพที่มีเส้นสีแทนท่อลมแต่ละเส้นชัดเจน พื้นหลังตัดกัน แสงเงาน้อย แนะนำไฟล์ PNG หรือ JPG และความละเอียดด้านยาว ≥ 1000 พิกเซล",
       sampleCorrect: "ตัวอย่างรูปที่ถูกต้อง",
     }
+  };
+
+  // --- Unit conversions and formulas ---
+  const CFM_PER_LPS = 2.118880003; // 1 L/s = 2.11888 CFM
+  const LPS_PER_CFM = 1 / CFM_PER_LPS; // 1 CFM = 0.471947 L/s
+  const PA_PER_INH2O = 249.0889; // Pa per inch of water
+  const M_PER_100FT = 30.48; // meters in 100 ft
+  // Convert friction rate between IP (inH2O/100ft) and SI (Pa/m)
+  const ipToSiFR = (inH2O_per_100ft: number) => (inH2O_per_100ft * PA_PER_INH2O) / M_PER_100FT; // Pa/m
+  const siToIpFR = (pa_per_m: number) => (pa_per_m * M_PER_100FT) / PA_PER_INH2O; // inH2O/100ft
+
+  // IP (18): D(in) = ( FR_ip / (0.12317 * Q_cfm^1.82) )^(-1/4.86)
+  // Already defined below as computeEquivalentDiameterIP
+  // SI (18 in image): D(mm) = ( FR_si / (26352202 * Q_Lps^1.82) )^(-1/4.86)
+  // We return inches for internal rectangle math.
+  const computeEquivalentDiameterSI_toIn = (FR_Pa_per_m: number, Q_Lps: number): number => {
+    if (!(FR_Pa_per_m > 0) || !(Q_Lps > 0)) return NaN;
+    const denom = 26352202 * Math.pow(Q_Lps, 1.82);
+    const base = FR_Pa_per_m / denom;
+    const D_mm = Math.pow(base, -1 / 4.86);
+    return D_mm / 25.4;
+  };
+
+  // Switch unit mode and convert current inputs accordingly
+  const handleSwitchUnit = (mode: 'ip' | 'si') => {
+    if (mode === unitMode) return;
+    // Convert friction rate displayed value
+    const frVal = parseFloat(frictionRate);
+    if (!isNaN(frVal)) {
+      const converted = mode === 'si' ? ipToSiFR(frVal) : siToIpFR(frVal);
+      setFrictionRate(String(Number(converted.toFixed(4))));
+    }
+    // Convert each row's flow field between CFM and L/s
+    setColorInputs(prev => prev.map(row => {
+      const v = parseFloat(row.cfm);
+      if (isNaN(v)) return row;
+      if (mode === 'si') {
+        const lps = v * LPS_PER_CFM;
+        return { ...row, cfm: String(Number(lps.toFixed(3))) };
+      } else {
+        const cfm = v * CFM_PER_LPS;
+        return { ...row, cfm: String(Number(cfm.toFixed(2))) };
+      }
+    }));
+    setUnitMode(mode);
   };
 
   // Helper to update only lengths from backend clusters while preserving existing CFM and manual flags
@@ -374,12 +427,16 @@ const ImageCalculator = () => {
       
       colorInputs.forEach(input => {
         if (input.cfm && input.length) {
-          const cfm = parseFloat(input.cfm);
+          const flowVal = parseFloat(input.cfm);
+          // For sizing, compute De depending on unit
+          const cfm = unitMode === 'si' ? flowVal * CFM_PER_LPS : flowVal;
           const length = parseFloat(input.length);
           
-          // Compute De from FR and Q using IP formula (18)
-          const FR = parseFloat(frictionRate) || 0.1; // in.wg/100 ft
-          const De = computeEquivalentDiameterIP(FR, cfm);
+          // Compute De using correct formula per unit
+          const FRDisplay = parseFloat(frictionRate) || 0.1; // shown in UI
+          const De = unitMode === 'ip'
+            ? computeEquivalentDiameterIP(FRDisplay, cfm)
+            : computeEquivalentDiameterSI_toIn(FRDisplay, flowVal);
           if (!isFinite(De) || De <= 0) return;
           
           // Compute width and height (auto/manual)
@@ -447,8 +504,14 @@ const ImageCalculator = () => {
             return;
           }
 
-          const area = (width * height);
-          const velocity = 144 * cfm / (area);
+          const area_in2 = (width * height);
+          const velocity = unitMode === 'ip'
+            ? (144 * cfm / area_in2)
+            : (() => {
+                const area_m2 = area_in2 * 0.00064516; // in^2 -> m^2
+                const q_m3s = flowVal * 0.001; // L/s -> m^3/s
+                return q_m3s / area_m2; // m/s
+              })();
           // giSheetArea uses fixed formula: [0.545*(W+H)+1]*L
           const giSheetArea = (0.545 * (width + height) + 1) * length;
           
@@ -468,11 +531,11 @@ const ImageCalculator = () => {
           const newResult: CalculationResult = {
             id: input.id,
             color: input.color,
-            cfm,
+            cfm, // stored as CFM-equivalent internally
             length,
             width,
             height,
-            friction: FR, // keep FR as the friction rate shown
+            friction: FRDisplay,
             velocity,
             giSheetArea,
             giNumber
@@ -484,7 +547,7 @@ const ImageCalculator = () => {
       
       setResults(updatedResults);
     }
-  }, [frictionRate, colorInputs]);
+  }, [frictionRate, colorInputs, unitMode]);
 
   const updateColorInputWithoutTrigger = (id: string, field: 'width' | 'height', value: string) => {
     setColorInputs(prev => prev.map(input =>
@@ -523,12 +586,15 @@ const ImageCalculator = () => {
     
     const updatedInput = updatedInputs.find(input => input.id === id);
     if (updatedInput && updatedInput.cfm && updatedInput.length) {
-      const cfm = parseFloat(updatedInput.cfm);
+      const flowVal = parseFloat(updatedInput.cfm);
+      const cfm = unitMode === 'si' ? flowVal * CFM_PER_LPS : flowVal;
       const length = parseFloat(updatedInput.length);
       
-      // Compute De from FR and Q using IP formula (18)
-      const FR = parseFloat(frictionRate) || 0.1;
-      const De = computeEquivalentDiameterIP(FR, cfm);
+      // Compute De from FR and Q using correct formula (IP or SI)
+      const FRDisplay = parseFloat(frictionRate) || 0.1;
+      const De = unitMode === 'ip'
+        ? computeEquivalentDiameterIP(FRDisplay, cfm)
+        : computeEquivalentDiameterSI_toIn(FRDisplay, flowVal);
       if (!isFinite(De) || De <= 0) {
         setResults(prev => prev.filter(result => result.id !== id));
         return;
@@ -602,8 +668,14 @@ const ImageCalculator = () => {
       updateColorInputWithoutTrigger(updatedInput.id, 'width', isNaN(width) ? '' : String(width));
       updateColorInputWithoutTrigger(updatedInput.id, 'height', isNaN(height) ? '' : String(height));
       
-      const area = (width * height);
-      const velocity = 144 * cfm / (area);
+      const area_in2 = (width * height);
+      const velocity = unitMode === 'ip'
+        ? (144 * cfm / area_in2)
+        : (() => {
+            const area_m2 = area_in2 * 0.00064516;
+            const q_m3s = flowVal * 0.001;
+            return q_m3s / area_m2;
+          })();
   // giSheetArea uses fixed formula: [0.545*(W+H)+1]*L
   const giSheetArea = (0.545 * (width + height) + 1) * length;
       
@@ -627,7 +699,7 @@ const ImageCalculator = () => {
         length,
         width,
         height,
-        friction: FR,
+        friction: FRDisplay,
         velocity,
         giSheetArea,
         giNumber
@@ -674,12 +746,15 @@ const ImageCalculator = () => {
     const calculatedResults: CalculationResult[] = colorInputs
       .filter(input => input.cfm && input.length)
       .map(input => {
-        const cfm = parseFloat(input.cfm);
+        const flowVal = parseFloat(input.cfm);
+        const cfm = unitMode === 'si' ? flowVal * CFM_PER_LPS : flowVal;
         const length = parseFloat(input.length);
         const friction = parseFloat(input.friction) || 0;
         
-        const FR = parseFloat(frictionRate) || 0.1;
-        const De = computeEquivalentDiameterIP(FR, cfm);
+        const FRDisplay = parseFloat(frictionRate) || 0.1;
+        const De = unitMode === 'ip'
+          ? computeEquivalentDiameterIP(FRDisplay, cfm)
+          : computeEquivalentDiameterSI_toIn(FRDisplay, flowVal);
         if (!isFinite(De) || De <= 0) {
           return null as unknown as CalculationResult;
         }
@@ -736,8 +811,14 @@ const ImageCalculator = () => {
           height = toEvenInt(height);
         }
 
-        const area = (width * height);
-        const velocity = 144 * cfm / (area);
+        const area_in2 = (width * height);
+        const velocity = unitMode === 'ip'
+          ? (144 * cfm / area_in2)
+          : (() => {
+              const area_m2 = area_in2 * 0.00064516;
+              const q_m3s = flowVal * 0.001;
+              return q_m3s / area_m2;
+            })();
   // giSheetArea uses fixed formula: [0.545*(W+H)+1]*L
   const giSheetArea = (0.545 * (width + height) + 1) * length;
         
@@ -761,7 +842,7 @@ const ImageCalculator = () => {
           length,
           width,
           height,
-          friction, // keep original friction field from row if used elsewhere
+          friction: FRDisplay, // show in current unit
           velocity,
           giSheetArea,
           giNumber
@@ -795,10 +876,20 @@ const ImageCalculator = () => {
   // Download results as CSV
   const downloadResults = () => {
     if (results.length === 0) return;
-    const headers = ['Color', 'CFM Value', 'Length (m)', 'Width (in)', 'Height (in)', 'Friction', 'Velocity (fpm)', 'GI Sheet Area', 'GI Number'];
+    const headers = [
+      'Color',
+      unitMode === 'ip' ? 'CFM Value' : 'Flow (L/s)',
+      'Length (m)',
+      'Width (in)',
+      'Height (in)',
+      'Friction',
+      unitMode === 'ip' ? 'Velocity (fpm)' : 'Velocity (m/s)',
+      'GI Sheet Area',
+      'GI Number'
+    ];
     const rows = results.map(r => [
       r.color,
-      r.cfm,
+      unitMode === 'ip' ? r.cfm : Number((r.cfm * LPS_PER_CFM).toFixed(3)),
       r.length,
       r.width,
       r.height,
@@ -1070,7 +1161,22 @@ const ImageCalculator = () => {
         </CardHeader>
         <CardContent>
           <div className="mb-6 p-4 bg-blue-50 rounded-lg border">
-            {/* Reference length (m) - above friction rate */}
+            {/* Unit toggle above Reference length */}
+            <div className="flex items-center gap-6 mb-3">
+              <button
+                onClick={() => handleSwitchUnit('ip')}
+                className={`pb-1 text-sm font-semibold ${unitMode === 'ip' ? 'text-blue-600 border-b-2 border-blue-500' : 'text-gray-500 hover:text-blue-500'}`}
+              >
+                I-P Units
+              </button>
+              <button
+                onClick={() => handleSwitchUnit('si')}
+                className={`pb-1 text-sm font-semibold ${unitMode === 'si' ? 'text-blue-600 border-b-2 border-blue-500' : 'text-gray-500 hover:text-blue-500'}`}
+              >
+                SI Units
+              </button>
+            </div>
+            {/* Reference length (m) below the toggle */}
             <div className="flex items-center gap-4 mb-3">
               <div className="flex-shrink-0">
                 <span className="text-sm font-semibold text-blue-700">
@@ -1107,7 +1213,7 @@ const ImageCalculator = () => {
                 />
               </div>
               <div className="flex items-center text-sm text-blue-600 font-medium">
-                {text[lang].frictionRateUnit}
+                {unitMode === 'ip' ? text[lang].frictionRateUnit : text[lang].frictionRateUnitSI}
                 <Dialog>
                   <DialogTrigger asChild>
                     <Info className="ml-2 h-4 w-4 cursor-pointer text-gray-500 hover:text-blue-600" />
@@ -1128,20 +1234,20 @@ const ImageCalculator = () => {
                   <thead>
                     <tr className="bg-slate-50">
                       <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{text[lang].color}</th>
-                      <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{text[lang].cfmInput}</th>
+                      <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{unitMode === 'ip' ? text[lang].cfmInput : text[lang].flowLps}</th>
                       <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{text[lang].lengthInput}</th>
                       <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{text[lang].widthInput}</th>
                       <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{text[lang].heightInput}</th>
                       <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{text[lang].frictionInput}</th>
                       <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">
                         <div className="flex items-center">
-                          {text[lang].velocityResult}
+                          {unitMode === 'ip' ? text[lang].velocityResult : text[lang].velocityResultSI}
                           <Dialog>
                             <DialogTrigger asChild>
                               <Info className="ml-2 h-4 w-4 cursor-pointer text-slate-500 hover:text-blue-600" />
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-[850px]">
-                              <h3 className="text-lg font-semibold">Velocity (fpm)</h3>
+                              <h3 className="text-lg font-semibold">{unitMode === 'ip' ? 'Velocity (fpm)' : 'Velocity (m/s)'}</h3>
                               <img src="/velocity.png" alt="Velocity (fpm)" className="w-full" />
                             </DialogContent>
                           </Dialog>
