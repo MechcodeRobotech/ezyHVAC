@@ -1235,7 +1235,7 @@ const ImageCalculator = () => {
                   </tbody>
                 </table>
               </div>
-              <div className="mt-4 flex justify-center">
+              <div className="mt-4 flex justify-start">
                 <Button 
                   onClick={addNewRow} 
                   variant="outline" 
@@ -1247,20 +1247,100 @@ const ImageCalculator = () => {
               </div>
             </>
           ) : (
-            <div className="text-center py-8 text-slate-500">
-              <p className="mb-4">{lang === 'th' ? 'ยังไม่มีข้อมูลในตาราง' : 'No data in table'}</p>
-              <Button 
-                onClick={addNewRow} 
-                variant="outline" 
-                className="text-sm flex items-center gap-2 bg-blue-50 text-blue-600 hover:bg-blue-100"
-              >
-                <Plus className="w-4 h-4" />
-                {text[lang].addRow}
-              </Button>
+            <div className="py-8 text-slate-500">
+              <p className="mb-4 text-center">{lang === 'th' ? 'ยังไม่มีข้อมูลในตาราง' : 'No data in table'}</p>
+              <div className="flex justify-start">
+                <Button 
+                  onClick={addNewRow} 
+                  variant="outline" 
+                  className="text-sm flex items-center gap-2 bg-blue-50 text-blue-600 hover:bg-blue-100"
+                >
+                  <Plus className="w-4 h-4" />
+                  {text[lang].addRow}
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>
       </Card>
+      )}
+
+      {/* Vent Header Information moved to main frame (before Summary Table) */}
+      {(uploadedImage || colorInputs.length > 0) && (
+        <Card className="mb-6 bg-white shadow-lg border border-gray-200">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-slate-700 flex items-center gap-2">
+              <Calculator className="w-5 h-5 text-emerald-600" />
+              {lang === 'th' ? 'ข้อมูลหัวจ่ายลม (Vent Header)' : 'Vent Header Information'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-gray-50 p-4 rounded-lg border">
+              <div className="flex flex-col gap-3 text-sm">
+                {ventHeaders.map((vh, idx) => (
+                  <div key={idx} className="flex flex-wrap items-center gap-3">
+                    <span className="font-medium text-gray-700">
+                      {text[lang].ventHeaderSize}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        value={vh.width}
+                        onChange={(e) => updateVentHeader(idx, 'width', e.target.value)}
+                        className="w-20 h-8 text-sm"
+                      />
+                      <span className="text-gray-600">X</span>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        value={vh.height}
+                        onChange={(e) => updateVentHeader(idx, 'height', e.target.value)}
+                        className="w-20 h-8 text-sm"
+                      />
+                      <span className="text-gray-600">in.</span>
+                    </div>
+
+                    <span className="font-medium text-gray-700">
+                      {text[lang].headCount}
+                    </span>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      value={vh.headCount}
+                      onChange={(e) => updateVentHeader(idx, 'headCount', e.target.value)}
+                      className="w-24 h-8 text-sm"
+                    />
+                    <span className="text-gray-600">{lang === 'th' ? 'หัว' : 'heads'}</span>
+
+                    <span className="font-medium text-gray-700">
+                      {text[lang].zincAmountFromCalc}
+                    </span>
+                    <Input
+                      type="text"
+                      placeholder="0"
+                      value={vh.zincAmount}
+                      readOnly
+                      className="w-28 h-8 text-sm bg-blue-50 text-blue-800 font-mono font-semibold"
+                    />
+                    <span className="text-gray-600">{text[lang].squareFeet}</span>
+
+                    {ventHeaders.length > 1 && (
+                      <Button variant="outline" size="sm" onClick={() => removeVentHeaderRow(idx)} className="text-red-600 border-red-200 hover:bg-red-50">
+                        <Trash2 className="w-4 h-4 mr-1" /> {text[lang].deleteRow}
+                      </Button>
+                    )}
+                  </div>
+                ))}
+                <div>
+                  <Button variant="outline" size="sm" onClick={addVentHeaderRow} className="text-green-700 border-green-200 hover:bg-green-50">
+                    <Plus className="w-4 h-4 mr-1" /> {text[lang].addRow}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Summary Table - แสดงเฉพาะเมื่อมีการอัพโหลดรูปหรือมีข้อมูลในตาราง */}
@@ -1273,72 +1353,6 @@ const ImageCalculator = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Vent Header Information (multiple rows) */}
-          <div className="bg-gray-50 p-4 rounded-lg border mb-4">
-            <div className="flex flex-col gap-3 text-sm">
-              {ventHeaders.map((vh, idx) => (
-                <div key={idx} className="flex flex-wrap items-center gap-3">
-                  <span className="font-medium text-gray-700">
-                    {text[lang].ventHeaderSize}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      placeholder="0"
-                      value={vh.width}
-                      onChange={(e) => updateVentHeader(idx, 'width', e.target.value)}
-                      className="w-20 h-8 text-sm"
-                    />
-                    <span className="text-gray-600">X</span>
-                    <Input
-                      type="number"
-                      placeholder="0"
-                      value={vh.height}
-                      onChange={(e) => updateVentHeader(idx, 'height', e.target.value)}
-                      className="w-20 h-8 text-sm"
-                    />
-                    <span className="text-gray-600">in.</span>
-                  </div>
-
-                  <span className="font-medium text-gray-700">
-                    {text[lang].headCount}
-                  </span>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={vh.headCount}
-                    onChange={(e) => updateVentHeader(idx, 'headCount', e.target.value)}
-                    className="w-24 h-8 text-sm"
-                  />
-                  <span className="text-gray-600">{lang === 'th' ? 'หัว' : 'heads'}</span>
-
-                  <span className="font-medium text-gray-700">
-                    {text[lang].zincAmountFromCalc}
-                  </span>
-                  <Input
-                    type="text"
-                    placeholder="0"
-                    value={vh.zincAmount}
-                    readOnly
-                    className="w-28 h-8 text-sm bg-blue-50 text-blue-800 font-mono font-semibold"
-                  />
-                  <span className="text-gray-600">{text[lang].squareFeet}</span>
-
-                  {ventHeaders.length > 1 && (
-                    <Button variant="outline" size="sm" onClick={() => removeVentHeaderRow(idx)} className="text-red-600 border-red-200 hover:bg-red-50">
-                      <Trash2 className="w-4 h-4 mr-1" /> {text[lang].deleteRow}
-                    </Button>
-                  )}
-                </div>
-              ))}
-              <div>
-                <Button variant="outline" size="sm" onClick={addVentHeaderRow} className="text-green-700 border-green-200 hover:bg-green-50">
-                  <Plus className="w-4 h-4 mr-1" /> {text[lang].addRow}
-                </Button>
-              </div>
-            </div>
-          </div>
-
           {summaryRows.length > 0 ? (
             <>
               <div className="overflow-x-auto">
