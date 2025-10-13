@@ -99,6 +99,7 @@ const ImageCalculator = () => {
       noImage: "Please upload an image first",
       clear: "Clear All",
       downloadResults: "Download Results",
+  downloadSummary: "Download Summary",
       addRow: "Add Row",
       deleteRow: "Delete Row",
       actions: "Actions",
@@ -140,6 +141,7 @@ const ImageCalculator = () => {
       noImage: "กรุณาอัพโหลดภาพก่อน",
       clear: "ล้างทั้งหมด",
       downloadResults: "ดาวน์โหลดผลลัพธ์",
+  downloadSummary: "ดาวน์โหลดสรุป",
       addRow: "เพิ่มแถว",
       deleteRow: "ลบแถว",
       actions: "การจัดการ",
@@ -806,6 +808,42 @@ const ImageCalculator = () => {
     window.URL.revokeObjectURL(url);
   };
 
+  // Download summary table as CSV (includes Adjusted Total and Sheets)
+  const downloadSummary = () => {
+    if (summaryRows.length === 0) return;
+    const headers = [
+      text[lang].zincNumber,
+      text[lang].totalArea,
+      text[lang].extraPercent,
+      text[lang].adjustedTotal,
+      text[lang].sheetCount,
+    ];
+
+    const rows = summaryRows.map((row) => {
+      const base = parseFloat(row.totalArea) || 0;
+      const pct = parseFloat(row.extraPercent) || 0;
+      const adjusted = base * (1 + pct / 100);
+      const sheetsRaw = adjusted > 0 ? (adjusted * 1.25) / 32 : 0;
+      const sheets = sheetsRaw > 0 ? Math.floor(sheetsRaw) : 0;
+      return [
+        row.zincNumber,
+        base > 0 ? base.toFixed(2) : '',
+        String(pct),
+        adjusted > 0 ? adjusted.toFixed(2) : '',
+        sheets > 0 ? String(sheets) : '',
+      ];
+    });
+
+    const csv = [headers.join(','), ...rows.map(arr => arr.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'summary-table.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   // Functions for summary table management
   const updateSummaryRow = (index: number, field: keyof Omit<SummaryTableRow, 'id'>, value: string) => {
     // ป้องกันการแก้ไข zincNumber
@@ -1346,11 +1384,22 @@ const ImageCalculator = () => {
       {/* Summary Table - แสดงเฉพาะเมื่อมีการอัพโหลดรูปหรือมีข้อมูลในตาราง */}
       {(uploadedImage || colorInputs.length > 0) && (
       <Card className="mb-6 bg-white shadow-lg border border-gray-200">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg font-semibold text-slate-700 flex items-center gap-2">
             <Calculator className="w-5 h-5 text-green-600" />
             {text[lang].summaryTable}
           </CardTitle>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={downloadSummary}
+              className="text-sm flex items-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              {text[lang].downloadSummary}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {summaryRows.length > 0 ? (
