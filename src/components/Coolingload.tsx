@@ -143,7 +143,7 @@ const languageData = {
         alphaHo: "α/ho",
         alphaHoAutoDesc: "Auto (from Surface Color)",
         alphaHoDesc: "Absorptivity-to-convection coefficient ratio of the surface",
-        interiorZone: "RTS Zone",
+        interiorZone: "RTS Zone Type",
         interiorZonePlaceholder: "Select Nonsolar RTS Zone",
         interiorZoneDesc: "Type of interior zone",
         window: "Window",
