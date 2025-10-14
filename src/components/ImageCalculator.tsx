@@ -120,7 +120,7 @@ const ImageCalculator = () => {
       sheetCount: "No. of Sheets",
       ventHeaderSize: "Size",
       headCount: "No. of Outlets",
-      dustSize: "Dust Connection (in.)",
+      dustSize: "Duct Connection (in.)",
       zincAmountFromCalc: "GI. Sheet",
       squareFeet: "square feet",
       ventHeaderDropdown: "Vent Header Information",
@@ -1566,7 +1566,7 @@ const ImageCalculator = () => {
 
                     <span className="font-medium text-gray-700">
                       {unitMode === 'si'
-                        ? (lang === 'th' ? 'Dust Connection (มม.)' : 'Dust Connection (mm)')
+                        ? (lang === 'th' ? 'Duct Connection (มม.)' : 'Duct Connection (mm)')
                         : text[lang].dustSize}
                     </span>
                     <Input
