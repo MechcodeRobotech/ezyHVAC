@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom';
 import LanguageToggle from "../contexts/LanguageToggle";
 import { useLanguage } from "../contexts/LanguageContext";
 import VisitorCounter from './VisitorCounter';
-import Logo from '../../public/Logo_of_University_of_Phayao.svg.png';
+import Logo from '../../public/ezyHVAC.png';
 import EzyPipeCal from './Ezypipe';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "./ui/sheet";
 
