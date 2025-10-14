@@ -169,7 +169,7 @@ const ImageCalculator = () => {
       sheetCount: "จำนวนแผ่น",
       ventHeaderSize: "ขนาด",
       headCount: "จำนวนหัวจ่าย",
-      dustSize: "Dust Connection (นิ้ว)",
+      dustSize: "Duct Connection (นิ้ว)",
       zincAmountFromCalc: "GI. Sheet",
       squareFeet: "ตารางฟุต",
       ventHeaderDropdown: "ข้อมูลหัวจ่ายลม",
