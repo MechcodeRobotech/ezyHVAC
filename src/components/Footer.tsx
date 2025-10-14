@@ -29,7 +29,7 @@ const Footer = () => {
       thaiBank: 'ธนาคารเกียรตินาคิน',
     },
   };
-  const paypalUrl = "https://paypal.me/NopparatKatkhaw?locale.x=th_TH&country.x=TH";
+  const paypalUrl = "https://wise.com/pay/me/nopparatk20";
   return (
     <footer className="bg-indigo-600 text-white py-2">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-4">
