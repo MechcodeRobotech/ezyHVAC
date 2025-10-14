@@ -115,13 +115,14 @@ const ImageCalculator = () => {
       summaryTable: "Summary Table",
       zincNumber: "GI Number",
       totalArea: "Total Area",
-      extraPercent: "Add %",
+      extraPercent: "Allowance %",
       adjustedTotal: "Total with %",
-      sheetCount: "Number of Sheets",
+      adjustedTotal: "Total with Allowance",
+      sheetCount: "No. of Sheets",
       ventHeaderSize: "Size",
-      headCount: "Number of heads",
-      dustSize: "Dust Size (in.)",
-      zincAmountFromCalc: "Zinc amount",
+      headCount: "No. of Outlets",
+      dustSize: "Dust Connection (in.)",
+      zincAmountFromCalc: "GI. Sheet",
       squareFeet: "square feet",
       ventHeaderDropdown: "Vent Header Information",
       uploadHelp: "What image should I upload?",
@@ -164,13 +165,13 @@ const ImageCalculator = () => {
       summaryTable: "ตารางสรุป",
       zincNumber: "เบอร์สังกะสี",
       totalArea: "พื้นที่รวม",
-      extraPercent: "เพิ่ม %",
-      adjustedTotal: "พื้นที่รวมหลังเพิ่ม %",
+      extraPercent: "เปอร์เซ็นต์เผื่อ",
+      adjustedTotal: "รวมเผื่อ",
       sheetCount: "จำนวนแผ่น",
       ventHeaderSize: "ขนาด",
-      headCount: "จำนวนหัว",
-      dustSize: "Dust Size (นิ้ว)",
-      zincAmountFromCalc: "ปริมาณสังกะสี",
+      headCount: "จำนวนหัวจ่าย",
+      dustSize: "Dust Connection (นิ้ว)",
+      zincAmountFromCalc: "GI. Sheet",
       squareFeet: "ตารางฟุต",
       ventHeaderDropdown: "ข้อมูลหัวจ่ายลม",
       uploadHelp: "ควรอัปโหลดรูปแบบไหน?",
@@ -910,25 +911,28 @@ const ImageCalculator = () => {
   // Download summary table as CSV (includes Adjusted Total and Sheets)
   const downloadSummary = () => {
     if (summaryRows.length === 0) return;
+    const areaUnit = unitMode === 'ip' ? 'ft^2' : 'm^2';
     const headers = [
       text[lang].zincNumber,
-      text[lang].totalArea,
+      `${text[lang].totalArea} (${areaUnit})`,
       text[lang].extraPercent,
-      text[lang].adjustedTotal,
+      `${text[lang].adjustedTotal} (${areaUnit})`,
       text[lang].sheetCount,
     ];
 
     const rows = summaryRows.map((row) => {
-      const base = parseFloat(row.totalArea) || 0;
+      const baseFt2 = parseFloat(row.totalArea) || 0;
+      const baseDisp = unitMode === 'ip' ? baseFt2 : baseFt2 / 10.764;
       const pct = parseFloat(row.extraPercent) || 0;
-      const adjusted = base * (1 + pct / 100);
-      const sheetsRaw = adjusted > 0 ? (adjusted * 1.25) / 32 : 0;
+      const adjustedFt2 = baseFt2 * (1 + pct / 100);
+      const adjustedDisp = unitMode === 'ip' ? adjustedFt2 : adjustedFt2 / 10.764;
+      const sheetsRaw = adjustedFt2 > 0 ? (adjustedFt2 * 1.25) / 32 : 0;
       const sheets = sheetsRaw > 0 ? Math.floor(sheetsRaw) : 0;
       return [
         row.zincNumber,
-        base > 0 ? base.toFixed(2) : '',
+        baseDisp > 0 ? baseDisp.toFixed(2) : '',
         String(pct),
-        adjusted > 0 ? adjusted.toFixed(2) : '',
+        adjustedDisp > 0 ? adjustedDisp.toFixed(2) : '',
         sheets > 0 ? String(sheets) : '',
       ];
     });
@@ -1429,7 +1433,7 @@ const ImageCalculator = () => {
                                 {(
                                   unitMode === 'ip'
                                     ? result.giSheetArea
-                                    : result.giSheetArea * 0.092903
+                                    : result.giSheetArea / 10.764
                                 ).toFixed(2)}
                               </span>
                             ) : (
@@ -1511,7 +1515,7 @@ const ImageCalculator = () => {
                     <div className="flex items-center gap-2">
                       <Input
                         type="number"
-                        placeholder={unitMode === 'si' ? (lang === 'th' ? 'มม.' : 'mm') : '0'}
+                        placeholder={unitMode === 'si' ? '0' : '0'}
                         value={unitMode === 'si' ? (vh.width ? String(Math.round(parseFloat(vh.width) * 25.4)) : '') : vh.width}
                         onChange={(e) => {
                           if (unitMode === 'si') {
@@ -1527,7 +1531,7 @@ const ImageCalculator = () => {
                       <span className="text-gray-600">X</span>
                       <Input
                         type="number"
-                        placeholder={unitMode === 'si' ? (lang === 'th' ? 'มม.' : 'mm') : '0'}
+                        placeholder={unitMode === 'si' ? '0' : '0'}
                         value={unitMode === 'si' ? (vh.height ? String(Math.round(parseFloat(vh.height) * 25.4)) : '') : vh.height}
                         onChange={(e) => {
                           if (unitMode === 'si') {
@@ -1562,15 +1566,26 @@ const ImageCalculator = () => {
                     </div>
 
                     <span className="font-medium text-gray-700">
-                      {text[lang].dustSize}
+                      {unitMode === 'si'
+                        ? (lang === 'th' ? 'Dust Connection (มม.)' : 'Dust Connection (mm)')
+                        : text[lang].dustSize}
                     </span>
                     <Input
                       type="number"
-                      placeholder="0.35"
-                      value={vh.dustSize}
-                      onChange={(e) => updateVentHeader(idx, 'dustSize', e.target.value)}
+                      placeholder={unitMode === 'si' ? '0' : '0.35'}
+                      value={unitMode === 'si' ? (vh.dustSize ? String(Math.round(parseFloat(vh.dustSize) * 25.4)) : '') : vh.dustSize}
+                      onChange={(e) => {
+                        if (unitMode === 'si') {
+                          const mmVal = parseFloat(e.target.value);
+                          const inches = isNaN(mmVal) ? '' : String(mmVal / 25.4);
+                          updateVentHeader(idx, 'dustSize', inches);
+                        } else {
+                          updateVentHeader(idx, 'dustSize', e.target.value);
+                        }
+                      }}
                       className="w-24 h-8 text-sm"
                     />
+                    <span className="text-gray-600">{unitMode === 'si' ? (lang === 'th' ? 'มม.' : 'mm') : (lang === 'th' ? 'นิ้ว' : 'in.')}</span>
 
                     <span className="font-medium text-gray-700">
                       {text[lang].headCount}
@@ -1582,7 +1597,6 @@ const ImageCalculator = () => {
                       onChange={(e) => updateVentHeader(idx, 'headCount', e.target.value)}
                       className="w-24 h-8 text-sm"
                     />
-                    <span className="text-gray-600">{lang === 'th' ? 'หัว' : 'heads'}</span>
 
                     <span className="font-medium text-gray-700">
                       {text[lang].zincAmountFromCalc}
@@ -1590,11 +1604,11 @@ const ImageCalculator = () => {
                     <Input
                       type="text"
                       placeholder="0"
-                      value={vh.zincAmount}
+                      value={unitMode === 'ip' ? vh.zincAmount : (vh.zincAmount ? String((parseFloat(vh.zincAmount) / 10.764).toFixed(2)) : '')}
                       readOnly
                       className="w-28 h-8 text-sm bg-blue-50 text-blue-800 font-mono font-semibold"
                     />
-                    <span className="text-gray-600">{text[lang].squareFeet}</span>
+                    <span className="text-gray-600">{unitMode === 'ip' ? 'ft²' : 'm²'}</span>
 
                     {ventHeaders.length > 1 && (
                       <Button variant="outline" size="sm" onClick={() => removeVentHeaderRow(idx)} className="text-red-600 border-red-200 hover:bg-red-50">
@@ -1642,9 +1656,9 @@ const ImageCalculator = () => {
                   <thead>
                     <tr className="bg-slate-50">
                       <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{text[lang].zincNumber}</th>
-                      <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{text[lang].totalArea}</th>
+                      <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{text[lang].totalArea} {unitMode === 'ip' ? '(ft²)' : '(m²)'}</th>
                       <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{text[lang].extraPercent}</th>
-                      <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{text[lang].adjustedTotal}</th>
+                      <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{text[lang].adjustedTotal} {unitMode === 'ip' ? '(ft²)' : '(m²)'}</th>
                       <th className="border border-gray-200 p-3 text-left text-sm font-semibold text-slate-700">{text[lang].sheetCount}</th>
                     </tr>
                   </thead>
@@ -1660,13 +1674,21 @@ const ImageCalculator = () => {
                           />
                         </td>
                         <td className="border border-gray-200 p-3">
-                          <Input
-                            type="text"
-                            placeholder={lang === 'th' ? 'คำนวณอัตโนมัติ' : 'Auto-calculated'}
-                            value={row.totalArea}
-                            readOnly
-                            className="w-full text-sm bg-slate-50 cursor-not-allowed"
-                          />
+                          {(() => {
+                            const baseFt2 = parseFloat(row.totalArea) || 0;
+                            const display = baseFt2 > 0
+                              ? (unitMode === 'ip' ? baseFt2.toFixed(2) : (baseFt2 / 10.764).toFixed(2))
+                              : '';
+                            return (
+                              <Input
+                                type="text"
+                                placeholder={lang === 'th' ? 'คำนวณอัตโนมัติ' : 'Auto-calculated'}
+                                value={display}
+                                readOnly
+                                className="w-full text-sm bg-slate-50 cursor-not-allowed"
+                              />
+                            );
+                          })()}
                         </td>
                         <td className="border border-gray-200 p-3">
                           <div className="flex items-center gap-2">
@@ -1683,15 +1705,17 @@ const ImageCalculator = () => {
                         </td>
                         <td className="border border-gray-200 p-3">
                           {(() => {
-                            const base = parseFloat(row.totalArea) || 0;
+                            const baseFt2 = parseFloat(row.totalArea) || 0;
                             const pct = parseFloat(row.extraPercent) || 0;
-                            const adjusted = base * (1 + pct / 100);
-                            const display = adjusted > 0 ? adjusted.toFixed(2) : '';
+                            const adjustedFt2 = baseFt2 * (1 + pct / 100);
+                            const val = adjustedFt2 > 0
+                              ? (unitMode === 'ip' ? adjustedFt2.toFixed(2) : (adjustedFt2 / 10.764).toFixed(2))
+                              : '';
                             return (
                               <Input
                                 type="text"
                                 placeholder={lang === 'th' ? 'คำนวณอัตโนมัติ' : 'Auto-calculated'}
-                                value={display}
+                                value={val}
                                 readOnly
                                 className="w-full text-sm bg-slate-50 cursor-not-allowed"
                               />
