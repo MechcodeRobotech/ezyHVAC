@@ -78,7 +78,7 @@ const ImageCalculator = () => {
   const [results, setResults] = useState<CalculationResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [frictionRate, setFrictionRate] = useState<string>('');
-  const [refLengthM, setRefLengthM] = useState<string>('5');
+  const [refLengthM, setRefLengthM] = useState<string>('26');
   // New: store last backend ROI used (for debug/transparency) and toggle
   const [backendROI, setBackendROI] = useState<{x1:number;y1:number;x2:number;y2:number}|null>(null);
   const [useBackendAnalyzer, setUseBackendAnalyzer] = useState<boolean>(true);
@@ -1442,7 +1442,7 @@ const ImageCalculator = () => {
               <div className="w-44">
                 <Input
                   type="number"
-                  placeholder={unitMode === 'ip' ? '5' : '5'}
+                  placeholder={unitMode === 'ip' ? '26' : '8'}
                   step="0.01"
                   value={refLengthM}
                   onChange={(e) => setRefLengthM(e.target.value)}
