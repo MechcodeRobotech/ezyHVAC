@@ -90,6 +90,9 @@ const ImageCalculator = () => {
     { width: '', height: '', dustSize: '', headCount: '', zincAmount: '' }
   ]);
 
+  // Helper: stable rounding to 2 decimals avoiding binary .5 artifacts
+  const round2 = (n: number): number => Math.round((n + Number.EPSILON) * 100) / 100;
+
   const text = {
     en: {
       title: "Image-Duct Length Calculator",
@@ -220,6 +223,8 @@ const ImageCalculator = () => {
       const converted = mode === 'si' ? ipToSiFR(frVal) : siToIpFR(frVal);
   setFrictionRate(String(Number(converted.toFixed(2))));
     }
+    // Set Insulation & Accessories cost to fixed defaults per unit system
+    setInsulationUnitCost(mode === 'ip' ? '32' : '320');
     // Convert each row's flow field between CFM and L/s, and clear L/W/H + manual flags
     setColorInputs(prev => prev.map(row => {
       const v = parseFloat(row.cfm);
@@ -998,58 +1003,180 @@ const ImageCalculator = () => {
       unitMode === 'ip' ? 'GI Sheet Area (ft^2)' : 'GI Sheet Area (m^2)',
       'GI Number'
     ];
-    const rows = results.map(r => [
-      r.color,
-  unitMode === 'ip' ? r.cfm : Number((r.cfm * LPS_PER_CFM).toFixed(2)),
-      unitMode === 'ip' ? Number((r.length * 3.28).toFixed(2)) : r.length,
-      unitMode === 'ip' ? r.width : Math.round(r.width * 25.4),
-      unitMode === 'ip' ? r.height : Math.round(r.height * 25.4),
-      r.friction,
-      r.velocity.toFixed(2),
-      (unitMode === 'ip' ? r.giSheetArea : r.giSheetArea / 10.764).toFixed(2),
-      r.giNumber
-    ]);
-    const csv = [headers.join(','), ...rows.map(arr => arr.join(','))].join('\n');
+    const rows = results.map(r => {
+      const flow = unitMode === 'ip' ? Number(r.cfm.toFixed(2)) : Number((r.cfm * LPS_PER_CFM).toFixed(2));
+      const lengthOut = unitMode === 'ip' ? Number((r.length * 3.28).toFixed(2)) : Number(r.length.toFixed(2));
+      const widthOut = unitMode === 'ip' ? Number(r.width.toFixed(2)) : Math.round(r.width * 25.4);
+      const heightOut = unitMode === 'ip' ? Number(r.height.toFixed(2)) : Math.round(r.height * 25.4);
+      const frictionOut = Number(r.friction.toFixed(2));
+      const velocityOut = Number(r.velocity.toFixed(2));
+      const areaOut = (unitMode === 'ip' ? r.giSheetArea : r.giSheetArea / 10.764).toFixed(2);
+      const arr = [
+        r.color,
+        flow,
+        lengthOut,
+        widthOut,
+        heightOut,
+        frictionOut,
+        velocityOut,
+        areaOut,
+        r.giNumber,
+      ];
+      const quote = (v: any) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+      return arr.map(quote).join(',');
+    });
+    const ts = new Date();
+    const tsName = `${ts.getFullYear()}${String(ts.getMonth()+1).padStart(2,'0')}${String(ts.getDate()).padStart(2,'0')}_${String(ts.getHours()).padStart(2,'0')}${String(ts.getMinutes()).padStart(2,'0')}`;
+    const csv = [headers.map(h=>`"${h}"`).join(','), ...rows].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'calculation-results.csv';
+    a.download = `calculation-results_${tsName}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
 
-  // Download summary table as CSV (includes Adjusted Total and Sheets)
+  // Download summary table as CSV (includes Adjusted Total, Unit Cost, Total Cost, and totals section)
   const downloadSummary = () => {
     if (summaryRows.length === 0) return;
     const areaUnit = unitMode === 'ip' ? 'ft^2' : 'm^2';
+    const perUnit = unitMode === 'ip' ? 'per ft^2' : 'per m^2';
+    const locale = lang === 'th' ? 'th-TH' : 'en-US';
+    const nf = new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const f2 = (n: number) => nf.format(round2(n));
+    const q = (v: any) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+
+    // Metadata section (helps readability when opened in Excel)
+    const ts = new Date();
+    const tsStr = `${ts.getFullYear()}-${String(ts.getMonth() + 1).padStart(2, '0')}-${String(ts.getDate()).padStart(2, '0')} ${String(ts.getHours()).padStart(2, '0')}:${String(ts.getMinutes()).padStart(2, '0')}`;
+    const unitLabel = unitMode === 'ip' ? (lang === 'th' ? 'I-P (ฟุต/นาที, ฟุต²)' : 'I-P (fpm, ft²)') : (lang === 'th' ? 'SI (ม./วินาที, ม²)' : 'SI (m/s, m²)');
+    const notes = lang === 'th'
+      ? 'หมายเหตุ: ปริมาณ GI เบอร์ 22 รวมพื้นที่ช่องรับ/จ่ายลม'
+      : 'Note: GI No.22 area includes air inlet/outlet additions';
+
+    const metaLines = [
+      [lang === 'th' ? 'ไฟล์สรุป' : 'Summary Export'],
+      [lang === 'th' ? 'วันที่' : 'Date', tsStr],
+      [lang === 'th' ? 'หน่วย' : 'Units', unitLabel],
+      [notes],
+      [''], // blank line
+    ].map(arr => arr.map(q).join(','));
+
+    // Table headers
     const headers = [
       text[lang].zincNumber,
       `${text[lang].totalArea} (${areaUnit})`,
       text[lang].extraPercent,
       `${text[lang].adjustedTotal} (${areaUnit})`,
+      `${lang === 'th' ? 'ต้นทุนต่อหน่วย' : 'Unit Cost'} (${perUnit})`,
+      `${lang === 'th' ? 'ราคารวม' : 'Total Cost'}`,
     ];
 
+    // Table rows
     const rows = summaryRows.map((row) => {
       const baseFt2 = parseFloat(row.totalArea) || 0;
+      const pct = parseFloat(row.extraPercent) || 0;
+      const adjustedFt2 = baseFt2 * (1 + pct / 100);
       const baseDisp = unitMode === 'ip' ? baseFt2 : baseFt2 / 10.764;
+      const adjustedDisp = unitMode === 'ip' ? adjustedFt2 : adjustedFt2 / 10.764;
+      const adjustedRounded = round2(adjustedDisp);
+      const unitCost = parseFloat(row.unitCost || '');
+      const areaForCost = adjustedRounded; // match UI rounding
+      const totalCost = isFinite(unitCost) && unitCost > 0 ? areaForCost * unitCost : 0;
+      const arr = [
+        row.zincNumber,
+        baseDisp > 0 ? f2(baseDisp) : '',
+        isFinite(pct) ? `${pct}` : '',
+        adjustedRounded > 0 ? f2(adjustedRounded) : '',
+        isFinite(unitCost) && unitCost > 0 ? f2(unitCost) : '',
+        totalCost > 0 ? f2(totalCost) : '',
+      ];
+      return arr.map(q).join(',');
+    });
+
+    // Totals section (aligned with table columns)
+    const sumAdjustedArea = summaryRows.reduce((acc, row) => {
+      const baseFt2 = parseFloat(row.totalArea) || 0;
       const pct = parseFloat(row.extraPercent) || 0;
       const adjustedFt2 = baseFt2 * (1 + pct / 100);
       const adjustedDisp = unitMode === 'ip' ? adjustedFt2 : adjustedFt2 / 10.764;
-      return [
-        row.zincNumber,
-        baseDisp > 0 ? baseDisp.toFixed(2) : '',
-        String(pct),
-        adjustedDisp > 0 ? adjustedDisp.toFixed(2) : '',
-      ];
-    });
+      return acc + round2(adjustedDisp);
+    }, 0);
 
-    const csv = [headers.join(','), ...rows.map(arr => arr.join(','))].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const baseTotals = summaryRows.reduce((acc, row) => {
+      const baseFt2 = parseFloat(row.totalArea) || 0;
+      const pct = parseFloat(row.extraPercent) || 0;
+      const adjustedFt2 = baseFt2 * (1 + pct / 100);
+      const adjustedDisp = unitMode === 'ip' ? adjustedFt2 : adjustedFt2 / 10.764;
+      const unitCost = parseFloat(row.unitCost || '');
+      const total = isFinite(unitCost) && unitCost > 0 ? round2(adjustedDisp) * unitCost : 0;
+      return acc + total;
+    }, 0);
+
+    const hangerPct = parseFloat(hangerPercent) || 0;
+    const hangerCost = baseTotals * (hangerPct / 100);
+    const insUnit = parseFloat(insulationUnitCost) || 0;
+    const insulationCost = insUnit * sumAdjustedArea; // already in display area unit
+    const grandTotal = baseTotals + hangerCost + insulationCost;
+
+    const totalsLines: string[] = [];
+    // Overall totals row: show adjusted area sum in column 4 and cost sum in column 6
+    totalsLines.push([
+      lang === 'th' ? 'รวม' : 'Total',
+      '',
+      '',
+      sumAdjustedArea > 0 ? f2(sumAdjustedArea) : '',
+      '',
+      baseTotals > 0 ? f2(baseTotals) : '',
+    ].map(q).join(','));
+
+    // Hanger row: percentage in Allowance % column, cost in Total Cost
+    totalsLines.push([
+      lang === 'th' ? 'Hanger , Support & Accessories' : 'Hanger , Support & Accessories',
+      '',
+      isFinite(hangerPct) && hangerPct > 0 ? `${hangerPct}` : '',
+      '',
+      '',
+      hangerCost > 0 ? f2(hangerCost) : '',
+    ].map(q).join(','));
+
+    // Insulation row: unit cost in Unit Cost column, cost in Total Cost
+    totalsLines.push([
+      lang === 'th' ? 'Insulation & Accessories cost' : 'Insulation & Accessories cost',
+      '',
+      '',
+      '',
+      isFinite(insUnit) && insUnit > 0 ? `${f2(insUnit)} ${perUnit}` : '',
+      insulationCost > 0 ? f2(insulationCost) : '',
+    ].map(q).join(','));
+
+    // Grand total row
+    totalsLines.push([
+      lang === 'th' ? 'Grand Total' : 'Grand Total',
+      '',
+      '',
+      '',
+      '',
+      f2(grandTotal),
+    ].map(q).join(','));
+
+    const csv = [
+      ...metaLines,
+      headers.map(q).join(','),
+      ...rows,
+      '',
+      ...totalsLines,
+    ].join('\r\n');
+
+    // Prepend BOM to ensure Excel displays UTF-8 (Thai) correctly
+    const csvWithBom = `\ufeff${csv}`;
+    const blob = new Blob([csvWithBom], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'summary-table.csv';
+    const tsName = `${ts.getFullYear()}${String(ts.getMonth()+1).padStart(2,'0')}${String(ts.getDate()).padStart(2,'0')}_${String(ts.getHours()).padStart(2,'0')}${String(ts.getMinutes()).padStart(2,'0')}`;
+    a.download = `summary-table_${tsName}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
@@ -1972,7 +2099,10 @@ const ImageCalculator = () => {
                             const pct = parseFloat(row.extraPercent) || 0;
                             const adjustedFt2 = baseFt2 * (1 + pct / 100);
                             const unitCost = parseFloat(row.unitCost || '');
-                            const total = isFinite(unitCost) && unitCost > 0 ? adjustedFt2 * unitCost : 0;
+                            // Use displayed adjusted area (ft² in IP, m² in SI)
+                            const adjustedDisp = unitMode === 'ip' ? adjustedFt2 : adjustedFt2 / 10.764;
+                            const adjustedRounded = round2(adjustedDisp);
+                            const total = isFinite(unitCost) && unitCost > 0 ? adjustedRounded * unitCost : 0;
                             return (
                               <Input
                                 type="text"
@@ -1986,6 +2116,35 @@ const ImageCalculator = () => {
                       </tr>
                     ))}
                   </tbody>
+                  {/* Footer totals aligned under Adjusted Total and Total Cost */}
+                  <tfoot>
+                    {(() => {
+                      // Sum adjusted areas in display unit and sum total cost
+                      const sums = summaryRows.reduce(
+                        (acc, row) => {
+                          const baseFt2 = parseFloat(row.totalArea) || 0;
+                          const pct = parseFloat(row.extraPercent) || 0;
+                          const adjustedFt2 = baseFt2 * (1 + pct / 100);
+                          const adjustedDisp = unitMode === 'ip' ? adjustedFt2 : adjustedFt2 / 10.764;
+                          const adjustedRounded = round2(adjustedDisp);
+                          const unitCost = parseFloat(row.unitCost || '');
+                          const rowTotal = isFinite(unitCost) && unitCost > 0 ? adjustedRounded * unitCost : 0;
+                          acc.sumAdjusted += adjustedRounded;
+                          acc.sumCost += rowTotal;
+                          return acc;
+                        },
+                        { sumAdjusted: 0, sumCost: 0 }
+                      );
+                      return (
+                        <tr className="bg-slate-50">
+                          <td className="border border-gray-200 p-3 font-semibold text-slate-800" colSpan={3}>{lang === 'th' ? 'รวม' : 'Total'}</td>
+                          <td className="border border-gray-200 p-3 text-right font-semibold text-slate-800">{sums.sumAdjusted > 0 ? sums.sumAdjusted.toFixed(2) : ''}</td>
+                          <td className="border border-gray-200 p-3" />
+                          <td className="border border-gray-200 p-3 text-right font-semibold text-slate-800">{sums.sumCost > 0 ? sums.sumCost.toFixed(2) : ''}</td>
+                        </tr>
+                      );
+                    })()}
+                  </tfoot>
                 </table>
               </div>
               {/* Totals section */}
@@ -1994,8 +2153,10 @@ const ImageCalculator = () => {
                   const baseFt2 = parseFloat(row.totalArea) || 0;
                   const pct = parseFloat(row.extraPercent) || 0;
                   const adjustedFt2 = baseFt2 * (1 + pct / 100);
+                  const adjustedDisp = unitMode === 'ip' ? adjustedFt2 : adjustedFt2 / 10.764;
+                  const adjustedRounded = round2(adjustedDisp);
                   const unitCost = parseFloat(row.unitCost || '');
-                  const total = isFinite(unitCost) && unitCost > 0 ? adjustedFt2 * unitCost : 0;
+                  const total = isFinite(unitCost) && unitCost > 0 ? adjustedRounded * unitCost : 0;
                   return acc + total;
                 }, 0);
                 const hangerPct = parseFloat(hangerPercent) || 0;
@@ -2012,9 +2173,6 @@ const ImageCalculator = () => {
                 const grandTotal = baseTotals + hangerCost + insulationCost;
                 return (
                   <div className="mt-4 grid gap-3">
-                    <div className="text-sm font-medium text-slate-700">
-                      Total: <span className="font-mono text-blue-700">{baseTotals.toFixed(2)}</span>
-                    </div>
                     <div className="flex items-center gap-2 text-sm">
                       <span>{lang === 'th' ? 'Hanger , Support & Accessories (%)' : 'Hanger , Support & Accessories (%)'}</span>
                       <Input type="number" className="w-24 h-8" value={hangerPercent} onChange={(e) => setHangerPercent(e.target.value)} />
