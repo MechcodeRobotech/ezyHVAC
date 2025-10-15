@@ -14,7 +14,7 @@ const Footer = () => {
       qrCodeAlt: "QR Code for Donation",
       q: 'Donate for server costs and support education.',
       scanQr: 'Scan QR Code for donation',
-      paypalDonation: 'PayPal Donation',
+      paypalDonation: 'Wise Donation',
       thaiBank: 'KKP Bank',
     },
     th: {
