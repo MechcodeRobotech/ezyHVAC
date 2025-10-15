@@ -15,7 +15,7 @@ const Header = () => {
   const text = {
     en: {
       title: "ezyHVAC ",
-      desc: "HVAC Calculator tools",
+      desc: "HVAC Calculation tools",
       calculation: "Thailand",
       comparison: "Energy Comparison",
       upload: "Other Country",
