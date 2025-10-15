@@ -1923,7 +1923,7 @@ const ImageCalculator = () => {
                     </span>
                     <Input
                       type="number"
-                      placeholder={unitMode === 'si' ? '0' : '0.35'}
+                      placeholder={unitMode === 'si' ? '0' : '0'}
                       step={unitMode === 'si' ? 1 : undefined}
                       value={unitMode === 'si' ? (vh.dustSize ? String(Math.round(parseFloat(vh.dustSize) * 25.4)) : '') : vh.dustSize}
                       onChange={(e) => {
