@@ -79,35 +79,67 @@ def _measure_lengths(mask, method="skeleton", min_area=30):
         results.append({"length_px": length})
     return results, total_len_px
 
-def _compute_ref_m_per_px(img_bgr, roi_xyxy: Tuple[int,int,int,int], ref_length_m: float) -> float:
-    x1, y1, x2, y2 = roi_xyxy
+def _compute_ref_m_per_px(
+    img_bgr,   # << คงพารามิเตอร์ไว้เพื่อไม่ให้โค้ดอื่นพัง แต่จะไม่ถูกใช้
+    ref_length_m: float,
+    *,
+    roi_ratio: float = 0.30             # สัดส่วนความสูงของ ROI ด้านล่าง (ค่าเริ่มต้น 30%)
+) -> float:
+    """
+    คำนวณสเกล เมตร/พิกเซล จากเส้นอ้างอิงสีดำใน 'พื้นที่ 30% ด้านล่างของรูป'
+    - roi_xyxy ถูกละเลย (เก็บไว้เพื่อความเข้ากันได้กับโค้ดเดิม)
+    - ref_length_m = ความยาวจริงของเส้นอ้างอิง (เมตร)
+    - roi_ratio = สัดส่วนความสูงของ ROI ด้านล่าง (0.30 = 30%)
+
+    return: m_per_px (float)
+    """
+    if img_bgr is None or img_bgr.size == 0:
+        raise ValueError("ภาพว่างหรือโหลดไม่สำเร็จ")
+
+    H, W = img_bgr.shape[:2]
+    if H <= 0 or W <= 0:
+        raise ValueError("ขนาดภาพไม่ถูกต้อง")
+
+    # --- กำหนด ROI เป็นแถบด้านล่าง roi_ratio ของความสูง ---
+    y1 = int(max(0, round((1.0 - float(roi_ratio)) * H)))
+    y2 = H
+    x1, x2 = 0, W
     roi = img_bgr[y1:y2, x1:x2].copy()
     if roi.size == 0:
-        raise ValueError("ROI ว่างหรือเกินขอบภาพ")
+        raise ValueError("ROI ว่าง (ตรวจสอบสัดส่วน roi_ratio และขนาดภาพ)")
 
-    hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(hsv, (0,0,0), (179,255,50))  # จับเส้นอ้างอิงสีดำ/มืด
+    # --- หาเส้นอ้างอิงสีดำใน ROI ---
+    hsv  = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv, (0, 0, 0), (179, 255, 50))  # ค่ามืด/ดำ
+
+    # เก็บกวาดสัญญาณรบกวนเล็กน้อย
+    k = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, k, iterations=1)
+
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if not contours:
-        raise RuntimeError("ไม่พบเส้นอ้างอิงสีดำใน ROI")
+        raise RuntimeError("ไม่พบเส้นอ้างอิงสีดำใน ROI 30% ด้านล่าง (ลองปรับแสง/threshold)")
 
-    (w, h) = cv2.minAreaRect(max(contours, key=cv2.contourArea))[1]
-    pix_len = max(float(w), float(h))
+    # ใช้คอนทัวร์ใหญ่สุดเป็นเส้นอ้างอิง
+    cnt = max(contours, key=cv2.contourArea)
+    (w_ref, h_ref) = cv2.minAreaRect(cnt)[1]   # (width,height) ของกรอบเอียง
+    pix_len = max(float(w_ref), float(h_ref))  # ด้านยาวสุด = ความยาวพิกเซลของเส้นอ้างอิง
+
     if pix_len <= 0:
-        raise RuntimeError("ความยาวพิกเซลของเส้นอ้างอิงเป็นศูนย์")
+        raise RuntimeError("ความยาวพิกเซลของเส้นอ้างอิงเป็นศูนย์ (ตรวจสอบ ROI/ภาพ)")
+
     return float(ref_length_m) / pix_len
 
 # --- ฟังก์ชัน one-shot ที่คืน JSON ---
 def analyze_single_image(
     image: Union[str, Path, np.ndarray],
-    ref_roi_xyxy: Tuple[int,int,int,int],
     ref_length_m: float,
     *,
     k: int = None,
     s_thr: int = 60,
     v_thr: int = 40,
     min_dist: int = 8,
-    measure: str = "box",
+    measure: str = "skeleton",
     min_area: int = 30,
     return_json: bool = True,         # <<<< เพิ่มพารามิเตอร์นี้
     json_indent: int = 2              # <<<< และตั้งค่า indent ได้
@@ -125,7 +157,7 @@ def analyze_single_image(
         raise TypeError("image ต้องเป็น path หรือ numpy.ndarray")
 
     # 2) scale เมตร/พิกเซลจากเส้นอ้างอิง
-    m_per_px = _compute_ref_m_per_px(img_bgr, ref_roi_xyxy, ref_length_m)
+    m_per_px = _compute_ref_m_per_px(img_bgr, ref_length_m, roi_ratio=0.25)
 
     # 3) เลือกพิกเซลที่มีสี + เดา/กำหนด K
     hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)

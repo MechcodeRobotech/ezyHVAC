@@ -262,7 +262,6 @@ async def measure_image_endpoint(
         # Call the analysis function; pass ndarray to avoid re-reading from disk
         result = analyze_single_image(
             image=img_bgr,
-            ref_roi_xyxy=(x1, y1, x2, y2),
             ref_length_m=ref_length_m,
             k=k,
             s_thr=s_thr,
@@ -297,7 +296,6 @@ async def measure_image_endpoint(
             try:
                 result2 = analyze_single_image(
                     image=img_bgr,
-                    ref_roi_xyxy=(x1, y1, x2, y2),
                     ref_length_m=ref_length_m,
                     k=k,
                     s_thr=s_thr,

@@ -96,7 +96,7 @@ const ImageCalculator = () => {
   const text = {
     en: {
       title: "Image-Duct Length Calculator",
-      description: "Upload the ductwork drawing that hightlights different duct sizes using color coding, including reference line (see example).",
+      description: "Upload the ductwork drawing that highlights different duct sizes using color coding, including the black reference line at the bottom-right corner of the image.",
       uploadImage: "Upload",
       dragDrop: "Drag and drop an image here, or click to select",
       colorDetected: "Colors Detected",
@@ -128,7 +128,7 @@ const ImageCalculator = () => {
   frictionRateUnit: "(in.wc/100ft)",
   frictionRateUnitSI: "(Pa/m)",
       summaryTable: "Summary Table",
-      zincNumber: "GI Number",
+      zincNumber: "GI. Number",
       totalArea: "Total Area",
       extraPercent: "Allowance %",
   adjustedTotal: "Total with Allowance",
@@ -142,10 +142,11 @@ const ImageCalculator = () => {
       uploadHelp: "What image should I upload?",
       uploadHelpDesc: "Use a clear plan with distinct colored lines for each duct run, a high-contrast background, and minimal shadows. Recommended formats: PNG or JPG. Suggested resolution ≥ 1000 px on the longer side.",
       sampleCorrect: "Example of a correct image",
+      seeExample: "(see example)",
     },
     th: {
       title: "เครื่องคำนวณความยาวท่อจากภาพ",
-      description: "อัพโหลดแบบแปลนท่อลมที่มีการเน้นขนาดท่อต่างๆ ด้วยการใช้สี รวมถึงเส้นอ้างอิง (ดูตัวอย่าง)",
+      description: "อัพโหลดแบบแปลนท่อลมที่มีการเน้นขนาดท่อต่างๆ ด้วยการใช้สี รวมถึงเส้นอ้างอิง",
       uploadImage: "อัพโหลด",
       dragDrop: "ลากและวางภาพที่นี่ หรือคลิกเพื่อเลือก",
       colorDetected: "สีที่ตรวจพบ",
@@ -191,6 +192,7 @@ const ImageCalculator = () => {
       uploadHelp: "ควรอัปโหลดรูปแบบไหน?",
       uploadHelpDesc: "ควรใช้แบบแปลน/ภาพที่มีเส้นสีแทนท่อลมแต่ละเส้นชัดเจน พื้นหลังตัดกัน แสงเงาน้อย แนะนำไฟล์ PNG หรือ JPG และความละเอียดด้านยาว ≥ 1000 พิกเซล",
       sampleCorrect: "ตัวอย่างรูปที่ถูกต้อง",
+      seeExample: "ดูตัวอย่าง",
     }
   };
 
@@ -198,6 +200,8 @@ const ImageCalculator = () => {
   const CFM_PER_LPS = 2.119; // 1 L/s = 2.119 CFM
   const LPS_PER_CFM = 1 / CFM_PER_LPS; // 1 CFM = 0.471947 L/s
   const FR_RATIO_SI_PER_IP = 8.17; // Pa/m per (in.wc/100ft)
+  // Reference length conversion factor: 1 m = 3.28 ft (as requested)
+  const FT_PER_M = 3.28;
   // Convert friction rate between IP (in.wc/100ft) and SI (Pa/m)
   const ipToSiFR = (inWc_per_100ft: number) => inWc_per_100ft * FR_RATIO_SI_PER_IP; // Pa/m
   const siToIpFR = (pa_per_m: number) => pa_per_m / FR_RATIO_SI_PER_IP; // in.wc/100ft
@@ -221,8 +225,23 @@ const ImageCalculator = () => {
     const frVal = parseFloat(frictionRate);
     if (!isNaN(frVal)) {
       const converted = mode === 'si' ? ipToSiFR(frVal) : siToIpFR(frVal);
-  setFrictionRate(String(Number(converted.toFixed(2))));
+      setFrictionRate(String(Number(converted.toFixed(2))));
+    } else {
+      // Default friction when switching to SI with no current value
+      if (mode === 'si') {
+        setFrictionRate('0.8');
+      }
     }
+    // Convert Reference length value automatically (no retyping)
+    setRefLengthM(prev => {
+      const v = parseFloat(prev);
+      if (!isNaN(v) && v > 0) {
+        // switching to SI means current was IP (ft) -> m; switching to IP means m -> ft
+        const converted = mode === 'si' ? (v / FT_PER_M) : (v * FT_PER_M);
+        return String(Number(converted.toFixed(2)));
+      }
+      return prev;
+    });
     // Set Insulation & Accessories cost to fixed defaults per unit system
     setInsulationUnitCost(mode === 'ip' ? '32' : '320');
     // Convert each row's flow field between CFM and L/s, and clear L/W/H + manual flags
@@ -251,7 +270,6 @@ const ImageCalculator = () => {
     // Clear previous results and backend ROI; user must enter new reference
     setResults([]);
     setBackendROI(null);
-    setRefLengthM('');
     // Update summary unitCost defaults respectfully: keep user-entered values, replace blanks or previous-defaults
     setSummaryRows(prev => {
       const oldMap = unitMode === 'ip' ? DEFAULT_UNIT_COSTS_IP : DEFAULT_UNIT_COSTS_SI;
@@ -1001,7 +1019,7 @@ const ImageCalculator = () => {
       unitMode === 'ip' ? 'Friction (in.wc/100ft)' : 'Friction (Pa/m)',
       unitMode === 'ip' ? 'Velocity (fpm)' : 'Velocity (m/s)',
       unitMode === 'ip' ? 'GI Sheet Area (ft^2)' : 'GI Sheet Area (m^2)',
-      'GI Number'
+      'GI. Number'
     ];
     const rows = results.map(r => {
       const flow = unitMode === 'ip' ? Number(r.cfm.toFixed(2)) : Number((r.cfm * LPS_PER_CFM).toFixed(2));
@@ -1289,7 +1307,34 @@ const ImageCalculator = () => {
             <Calculator className="w-5 h-5 text-indigo-600" />
             {text[lang].title}
           </CardTitle>
-          <CardDescription className="text-sm text-slate-500">{text[lang].description}</CardDescription>
+          <CardDescription className="text-sm text-slate-500 flex items-center gap-2">
+            <span>{text[lang].description}</span>
+            <Dialog>
+              <DialogTrigger asChild>
+                <button
+                  type="button"
+                  className="text-blue-600 hover:underline"
+                  title={text[lang].seeExample}
+                >
+                  {text[lang].seeExample}
+                </button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[900px]">
+                <h3 className="text-lg font-semibold mb-2">{text[lang].uploadHelp}</h3>
+                <p className="text-sm text-slate-600 mb-4">{text[lang].uploadHelpDesc}</p>
+                <div className="space-y-2">
+                  <div className="text-sm font-medium text-slate-700">{text[lang].sampleCorrect}</div>
+                  <img
+                    src="/Ex.jpg"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
+                    alt={text[lang].sampleCorrect}
+                    className="w-full max-h-[60vh] object-contain rounded border"
+                  />
+                  <p className="text-xs text-slate-500">{lang === 'th' ? 'หากไม่เห็นรูปตัวอย่าง ให้เพิ่มไฟล์ชื่อ Ex.jpg ที่โฟลเดอร์ public' : 'If the sample image does not appear, add a file named Ex.jpg under /public.'}</p>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </CardDescription>
         </CardHeader>
       </Card>
 
@@ -1299,25 +1344,6 @@ const ImageCalculator = () => {
             <CardTitle className="text-lg font-semibold text-slate-700 inline-flex items-center gap-2">
               <Upload className="w-5 h-5" />
               {text[lang].uploadImage}
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Info className="ml-1 h-4 w-4 cursor-pointer text-gray-500 hover:text-blue-600" />
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[900px]">
-                  <h3 className="text-lg font-semibold mb-2">{text[lang].uploadHelp}</h3>
-                  <p className="text-sm text-slate-600 mb-4">{text[lang].uploadHelpDesc}</p>
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium text-slate-700">{text[lang].sampleCorrect}</div>
-                    <img
-                      src="/Ex.jpg"
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
-                      alt={text[lang].sampleCorrect}
-                      className="w-full max-h-[60vh] object-contain rounded border"
-                    />
-                    <p className="text-xs text-slate-500">{lang === 'th' ? 'หากไม่เห็นรูปตัวอย่าง ให้เพิ่มไฟล์ชื่อ Ex.jpg ที่โฟลเดอร์ public' : 'If the sample image does not appear, add a file named Ex.jpg under /public.'}</p>
-                  </div>
-                </DialogContent>
-              </Dialog>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -1470,7 +1496,7 @@ const ImageCalculator = () => {
               <div className="w-44">
                 <Input
                   type="number"
-                  placeholder={unitMode === 'ip' ? '0.1' : '0.1'}
+                  placeholder={unitMode === 'ip' ? '0.1' : '0.8'}
                   step="0.001"
                   value={frictionRate}
                   onChange={(e) => setFrictionRate(e.target.value)}
