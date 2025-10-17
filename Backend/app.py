@@ -77,10 +77,7 @@ class CalculationParameters(BaseModel):
         from_attributes = True
 
 
-MONGO_DETAILS = os.environ.get(
-    "MONGO_DETAILS",
-    "mongodb+srv://admin1:OtqZWh40oqdPAYGV@seer1.fe4uypj.mongodb.net/?retryWrites=true&w=majority&appName=SEER1",
-)
+MONGO_DETAILS = os.environ.get("MONGO_DETAILS")
 DATABASE_NAME = "SEER1"
 FILE_METADATA_COLLECTION = "uploaded_files_metadata"
 
@@ -90,7 +87,14 @@ fs: Optional[gridfs.GridFS] = None
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080"],
+    allow_origins=[
+        "http://localhost:8080",
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "https://*.vercel.app",
+        "https://ezyhvac.vercel.app",
+        "*"  # Allow all origins for development - remove in production
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -100,10 +104,14 @@ app.add_middleware(
 def connect_to_mongo():
     global client, db, fs
     try:
+        if not MONGO_DETAILS:
+            print("Warning: MONGO_DETAILS environment variable not set")
+            return
+        
         # Mask password in log for security
-        print(
-            f"Attempting to connect to MongoDB with URI: {MONGO_DETAILS[:MONGO_DETAILS.find('@')]}..."
-        )
+        masked_uri = MONGO_DETAILS[:MONGO_DETAILS.find('@')] + "@***" if '@' in MONGO_DETAILS else "***"
+        print(f"Attempting to connect to MongoDB with URI: {masked_uri}")
+        
         client = MongoClient(MONGO_DETAILS, server_api=ServerApi("1"))
         client.admin.command("ping")
         db = client[DATABASE_NAME]
@@ -111,6 +119,10 @@ def connect_to_mongo():
         print(f"Successfully connected to MongoDB: Database: {DATABASE_NAME}")
     except Exception as e:
         print(f"Error connecting to MongoDB: {e}")
+        # Set fallbacks for when MongoDB is not available
+        client = None
+        db = None
+        fs = None
 
 
 def close_mongo_connection():
@@ -222,8 +234,118 @@ def create_excel_file(data_dict: Dict[str, Any]) -> io.BytesIO:
 @app.get("/")
 def read_root():
     return {
-        "message": "Welcome to the SEER Calculator API. Use the /calculate-seer endpoint to calculate SEER."
+        "message": "Welcome to the SEER Calculator API. Use the /calculate-seer endpoint to calculate SEER.",
+        "status": "active",
+        "database_connected": db is not None,
+        "endpoints": [
+            "/calculate-seer",
+            "/calculate-seer-range-summary",
+            "/api/measure-image",
+            "/api/files/upload",
+            "/api/files",
+            "/health"
+        ]
     }
+
+@app.get("/health")
+def health_check():
+    return {
+        "status": "healthy",
+        "database_connected": db is not None,
+        "mongodb_status": "connected" if fs is not None else "disconnected"
+    }
+
+@app.post("/calculate-seer-simple")
+async def calculate_seer_simple(
+    mode: str = Form(...),
+    bin_temp: float = Form(...),
+    time_range: str = Form(...),
+    Coil_inlet_wet_bulb: float = Form(...),
+    Coil_inlet_dry_bulb: float = Form(...),
+    full_Capacity: float = Form(...),
+    half_Capacity: float = Form(0.0),
+    p_full: float = Form(...),
+    p_half: float = Form(0.0),
+    Designcoolingload: float = Form(...),
+    electricity_rate: float = Form(...),
+    working_day_per_year: int = Form(...),
+):
+    """
+    Simple SEER calculation without file upload - for testing purposes
+    """
+    try:
+        # Simple calculation with dummy data
+        sumLCST = 0.0
+        sumCCSE = 0.0
+        
+        # Assume 100 hours for calculation
+        total_hours_in_calculation = 100
+        n_days_in_calculation = 10
+        
+        Designcoolingload_watt = rd(Designcoolingload * 0.2930711)
+        t_iter = (bin_temp - 20) / 15
+        lc_iter = rd(Designcoolingload_watt * t_iter)
+        
+        if mode == "Fixed":
+            CFw = 0.2275475 + 0.0135333 * bin_temp + Coil_inlet_wet_bulb * 0.0155132
+            CFc = (
+                0.6781129
+                - 0.008971 * bin_temp
+                + 0.0325166 * Coil_inlet_wet_bulb
+                + 0.00505006
+            )
+            
+            CFw = max(CFw, 1e-9)
+            CFc = max(CFc, 1e-9)
+            
+            q_watt = rd((full_Capacity * 0.2930711) / CFc)
+            p_watt = rd(p_full / CFw)
+            
+            q_29 = rd(q_watt * 1.077)
+            p_29 = rd(p_watt * 0.914)
+            
+            q_adj = rd(q_watt + (q_29 - q_watt) * (35 - bin_temp) / 6)
+            p_adj = rd(p_watt + (p_29 - p_watt) * (35 - bin_temp) / 6)
+            
+            q_adj_safe = max(q_adj, 1e-9)
+            p_adj_safe = max(p_adj, 1e-9)
+            
+            X = rd(lc_iter / q_adj_safe)
+            Fpl = max(rd(1 - 0.25 * (1 - X)), 1e-9)
+            
+            LCST = rd(max(min(lc_iter, q_adj_safe), 0) * total_hours_in_calculation)
+            CCSE_fixed = rd((X * p_adj_safe * total_hours_in_calculation) / Fpl)
+            
+            sumLCST += LCST
+            sumCCSE += CCSE_fixed
+            
+        elif mode == "Variable":
+            # Variable mode calculation (simplified)
+            sumLCST = rd(Designcoolingload_watt * total_hours_in_calculation)
+            sumCCSE = rd(p_full * total_hours_in_calculation)
+        
+        seer = (sumLCST / sumCCSE) * 3.412 if sumCCSE > 0 else 0.0
+        sumCCSE_kwh = sumCCSE / 1000.0
+        sumLCST_Wh = sumLCST
+        
+        return JSONResponse(
+            content={
+                "seer": round(seer, 2),
+                "sumLCST_Wh": round(sumLCST_Wh, 3),
+                "sumCCSE_kwh": round(sumCCSE_kwh, 3),
+                "n_days": n_days_in_calculation,
+                "total_hours": total_hours_in_calculation,
+                "bin_temp": bin_temp,
+                "time_range": time_range,
+                "calculation_type": "simple",
+                "note": "This is a simplified calculation for testing. Use /calculate-seer for full functionality."
+            }
+        )
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Calculation error: {str(e)}")
 
 
 @app.post("/api/measure-image")
