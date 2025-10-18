@@ -337,11 +337,15 @@ const ImageCalculator = () => {
       }
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
       const apiUrl = apiBaseUrl ? `${apiBaseUrl}/api/measure-image` : '/api/measure-image';
+      console.log('🔗 API URL:', apiUrl, 'Environment:', import.meta.env.MODE);
       const resp = await fetch(apiUrl, {
         method: 'POST',
         body: form,
       });
-      if (!resp.ok) throw new Error(`backend ${resp.status}`);
+      if (!resp.ok) {
+        console.error('🚨 API Error:', resp.status, resp.statusText);
+        throw new Error(`backend ${resp.status}`);
+      }
       const data = await resp.json();
       const clusters = Array.isArray(data?.clusters) ? (data.clusters as any[]) : [];
       if (clusters.length > 0) {
@@ -349,7 +353,9 @@ const ImageCalculator = () => {
       }
       if (data?.roi) setBackendROI(data.roi);
     } catch (err) {
-      console.warn('Backend analyzer failed:', err);
+      console.warn('🔥 Backend analyzer failed:', err);
+      // Show user-friendly error message
+      alert(`❌ API Connection Failed: ${err instanceof Error ? err.message : 'Unknown error'}\n\nThe backend API is not available. Please make sure the API server is running.`);
     }
   };
 

@@ -1,0 +1,56 @@
+name: 🚀 Deploy ezyHVAC to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📁 Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: 🔧 Install dependencies
+      run: npm ci
+      
+    - name: 🏗️ Build application for production
+      run: npm run build
+      env:
+        # Use environment variable or fallback to current GitHub Pages URL
+        VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'https://api.ezyhvac.com' }}
+        
+    - name: 🧪 Run tests (if available)
+      run: npm run test --if-present
+      
+    - name: 📊 Display build info
+      run: |
+        echo "🏗️ Build completed successfully!"
+        echo "📂 Build output directory: ./dist"
+        echo "🌐 API URL: ${{ vars.VITE_API_BASE_URL || 'https://api.ezyhvac.com' }}"
+        ls -la dist/
+        
+    - name: 🚀 Deploy to GitHub Pages
+      if: github.ref == 'refs/heads/main'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./dist
+        # Optional: Custom domain
+        # cname: ezyhvac.com
+        
+    - name: 📝 Deployment Summary
+      if: github.ref == 'refs/heads/main'
+      run: |
+        echo "✅ Deployment completed successfully!"
+        echo "🌐 Site URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+        echo "⏰ Deployment time: $(date)"
