@@ -88,9 +88,13 @@ client: Optional[MongoClient] = None
 db: Optional[Any] = None
 fs: Optional[gridfs.GridFS] = None
 
+# Get allowed origins from environment variable
+import os
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:8080").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -1183,3 +1187,20 @@ async def calculate_seer_range_summary(
 
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+# Auto-start server if running as main module
+if __name__ == "__main__":
+    import uvicorn
+    print("🚀 Starting ezyHVAC Backend API Server...")
+    print("📍 Server will be available at: http://localhost:8000")
+    print("📖 API Documentation: http://localhost:8000/docs")
+    print("🛑 Press Ctrl+C to stop the server")
+    uvicorn.run(
+        "app:app",
+        host="127.0.0.1",
+        port=8000,
+        reload=True,
+        reload_dirs=["./"],
+        log_level="info"
+    )

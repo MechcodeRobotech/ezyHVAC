@@ -335,7 +335,9 @@ const ImageCalculator = () => {
         const meters = unitMode === 'ip' ? (refVal) : refVal;
         form.append('ref_length_m', String(meters));
       }
-      const resp = await fetch('/api/measure-image', {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const apiUrl = apiBaseUrl ? `${apiBaseUrl}/api/measure-image` : '/api/measure-image';
+      const resp = await fetch(apiUrl, {
         method: 'POST',
         body: form,
       });
